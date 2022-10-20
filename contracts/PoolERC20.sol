@@ -2,13 +2,12 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./IPerpetualStaking.sol";
 
-contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
+contract PoolERC20 is Ownable, ReentrancyGuard {
 
     //Pool Maturity date: This is the date on which contract will stop accepting fresh deposits and will also stop accruing the rewards.
     // Can be reinitialised
@@ -28,11 +27,6 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
 
     //Maintain reward for each tokens
     mapping(address => uint) private rewardPerBlock;
-
-    address private _rewardsDistribution;
-
-    //Address of behold of this contract
-    address private _beneficiery;
 
     //Deposit token used to create this contract
     address private _depositToken;
@@ -65,9 +59,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     //Claim state catch
     event Claim(address tokenAddress, uint amount);
 
-    constructor (address rewardsDistribution_, address beneficiery_, address depositToken_, uint startDate_, uint maturityDate_, uint cliff_) {
-        _rewardsDistribution = rewardsDistribution_;
-        _beneficiery = beneficiery_;
+    constructor (address depositToken_, uint startDate_, uint maturityDate_, uint cliff_) {
         _depositToken = depositToken_;
 
         // Cannot be initialized again. 
@@ -77,7 +69,21 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         _cliff = cliff_;
     }
 
-    function deposit(uint amount) external {
+    function isContract(address account) internal view returns (bool) {
+        // This method relies on extcodesize/address.code.length, which returns 0
+        // for contracts in construction, since the code is only stored at the end
+        // of the constructor execution.
+
+        return account.code.length > 0;
+    }
+
+    modifier isExpired() {
+        require(block.timestamp > _startDate);
+        require(block.timestamp < maturityDate()); 
+        _;
+    }
+
+    function deposit(uint amount) external nonReentrant isExpired {
         require(IERC20(_depositToken).balanceOf(msg.sender) >= amount, "You are not the Owner");
         userPoolCount[msg.sender] ++;
         userDeposits[msg.sender][userPoolCount[msg.sender]] = Deposit (
@@ -87,33 +93,28 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         IERC20(_depositToken).transferFrom(msg.sender, address(this), amount);
     }
 
-    modifier onlyRewardsDistribution() {
-        require(msg.sender == _rewardsDistribution, "Caller is not RewardsDistribution contract");
-        _;
-    }
-
     //Function to claim Rewards
     // Reward Can be claimed only after cliff
     function claim(address tokenAddress, uint amount) external {
         uint unclaimed;
-        for(uint i = 0; i < userPoolCount[msg.sender]; i++) {
+        for(uint i = 1; i <= userPoolCount[msg.sender]; i++) {
             if(userDeposits[msg.sender][i].depositTime >= block.timestamp + _cliff) {
                 unclaimed = getReward(tokenAddress, msg.sender, userDeposits[msg.sender][i].depositTime);
             } 
         }
         require(IERC20(tokenAddress).balanceOf(address(this)) >= unclaimed);
-        IERC20(tokenAddress).transfer(_beneficiery, unclaimed);
+        IERC20(tokenAddress).transfer(msg.sender, unclaimed);
         _claimed[tokenAddress] = unclaimed; 
         emit Claim(tokenAddress, amount);
     }
 
-    function lastTimeRewardApplicable() public view returns (uint256) {
-        return Math.min(block.timestamp, IPerpetualStaking(_rewardsDistribution).maturityDate());
+    function lastTimeRewardApplicable() public view returns (uint) {
+        return Math.min(block.timestamp, maturityDate());
     }
 
     // BalancetoClaim reward = {((current block - depositblock)*reward count)- claimedrewards}
     function getReward(address tokenAddress, address user, uint depositID) public view returns (uint lastReward) {
-        uint rewardCount = getRewardPerUnitOfDeposit(tokenAddress) * userDeposits[user][depositID]._depositBalance;
+        uint rewardCount = getRewardPerUnitOfDeposit(tokenAddress) * userDeposits[user][depositID].depositBalance;
         lastReward = lastReward +
                     (((lastTimeRewardApplicable() - userDeposits[user][depositID].depositTime) * rewardCount) - _claimed[tokenAddress]);
     }
@@ -123,7 +124,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     // Reward should be claimed seperately After cliff
     function withdraw(uint amount) external {
         uint pendingAmount = amount;
-        for(uint i = 0; i < userPoolCount[msg.sender]; i++) {
+        for(uint i = 1; i <= userPoolCount[msg.sender]; i++) {
             // Only after cliff
             if(userDeposits[msg.sender][i].depositTime >= block.timestamp + _cliff) {
                 // if first pool has greater amount than required, subract and do nothing
@@ -137,10 +138,12 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
                     IERC20(_depositToken).transfer(address(this), userDeposits[msg.sender][i].depositBalance);
                     delete userDeposits[msg.sender][i];
                 }
+
+                emit Withdraw(_depositToken, amount);
                     
             } 
         }
-        // emit Withdraw
+        
     }
 
     function getRewardPerUnitOfDeposit(address tokenAddress) public view returns (uint) {
@@ -191,5 +194,31 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         rewardPerBlock[tokenAddress] = newReward;
         emit RewardForTokens(newReward, tokenAddress);
     } 
+
+    function updateTreasuryContract(address _treasuryContract) external onlyOwner {
+        require(isContract(_treasuryContract), "Address is not a contract");
+        _treasury = _treasuryContract;
+
+    }
+
+    function treasuryContract() public view returns(address) {
+        return _treasury;
+    }
+
+    function depositToken() public view returns(address) {
+        return _depositToken;
+    }
+
+    function claimed(address tokenAddress) public view returns(uint) {
+        return _claimed[tokenAddress];
+    }
+
+    function userDeposit(address userAddress, uint poolCount) public view returns(Deposit memory depositdetails) {
+        return userDeposits[userAddress][poolCount];
+    }
+
+    function userDepositCount(address userAddress) public view returns(uint) {
+        return userPoolCount[userAddress];
+    }
 
 }
