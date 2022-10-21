@@ -138,7 +138,6 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
                     IERC20(_depositToken).transfer(msg.sender, userDeposits[msg.sender][i].depositBalance);
                     delete userDeposits[msg.sender][i];
                 }
-
                 emit Withdraw(_depositToken, amount);
                     
             } 
