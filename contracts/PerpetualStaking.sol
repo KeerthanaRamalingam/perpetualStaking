@@ -27,12 +27,14 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
         address poolAddress
     );
 
+    address[] private pools;
+
     function deployNewPool(
         address depositToken_,
         uint256 startDate_,
         uint256 maturityDate_,
         uint256 cliff_
-    ) external nonReentrant onlyOwner {
+    ) external nonReentrant onlyOwner returns (address){
         address newPool;
         if (isERC721(depositToken_)) {
             newPool = address(
@@ -47,6 +49,7 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
                 new PoolERC20(depositToken_, startDate_, maturityDate_, cliff_)
             );
         }
+        pools.push(newPool);
         emit NewPoolCreated(
             depositToken_,
             startDate_,
@@ -54,6 +57,7 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
             cliff_,
             newPool
         );
+        return newPool;
     }
 
     // Check whether contract address is ERC1155
@@ -64,5 +68,9 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
     // Check whether contract address is ERC721
     function isERC721(address nftAddress) public view returns (bool) {
         return nftAddress.supportsInterface(IID_IERC721);
+    }
+
+    function poolsDeployed() public view returns (address[] memory) {
+        return pools;
     }
 }

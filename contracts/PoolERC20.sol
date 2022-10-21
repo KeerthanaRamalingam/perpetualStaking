@@ -126,22 +126,22 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         uint pendingAmount = amount;
         for(uint i = 1; i <= userPoolCount[msg.sender]; i++) {
             // Only after cliff
-            if(userDeposits[msg.sender][i].depositTime >= block.timestamp + _cliff) {
+            // if(userDeposits[msg.sender][i].depositTime >= block.timestamp + _cliff) {
                 // if first pool has greater amount than required, subract and do nothing
-                if(userDeposits[msg.sender][i].depositBalance >= pendingAmount) { 
-                    IERC20(_depositToken).transfer(address(this), pendingAmount);
+                if(userDeposits[msg.sender][i].depositBalance > pendingAmount) { 
+                    IERC20(_depositToken).transfer(msg.sender, pendingAmount);
                     userDeposits[msg.sender][i].depositBalance -= pendingAmount;
                 }
                 // if first pool has lesser amount, subract the amount and save the remaining amount and delete the pool
                 else {
                     pendingAmount = pendingAmount - userDeposits[msg.sender][i].depositBalance;
-                    IERC20(_depositToken).transfer(address(this), userDeposits[msg.sender][i].depositBalance);
+                    IERC20(_depositToken).transfer(msg.sender, userDeposits[msg.sender][i].depositBalance);
                     delete userDeposits[msg.sender][i];
                 }
 
                 emit Withdraw(_depositToken, amount);
                     
-            } 
+            // } 
         }
         
     }
