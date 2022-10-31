@@ -38,7 +38,7 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
         address newPool;
         if (isERC721(depositToken_)) {
             newPool = address(
-                new PoolERC721(depositToken_, startDate_, maturityDate_, cliff_)
+                new PoolERC721(depositToken_, startDate_, maturityDate_, cliff_, msg.sender)
             );
         } else if (isERC1155(depositToken_)) {
             newPool = address(0);
@@ -46,7 +46,7 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
         } else {
             // we assume if token address is ERC20 if it is not ERC721 or ERC1155
             newPool = address(
-                new PoolERC20(depositToken_, startDate_, maturityDate_, cliff_)
+                new PoolERC20(depositToken_, startDate_, maturityDate_, cliff_, msg.sender)
             );
         }
         pools.push(newPool);

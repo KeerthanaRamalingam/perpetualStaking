@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./IPerpetualStaking.sol";
+import "hardhat/console.sol";
 
 contract PoolERC20 is Ownable, ReentrancyGuard {
 
@@ -59,7 +60,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     //Claim state catch
     event Claim(address tokenAddress, uint amount);
 
-    constructor (address depositToken_, uint startDate_, uint maturityDate_, uint cliff_) {
+    constructor (address depositToken_, uint startDate_, uint maturityDate_, uint cliff_, address owner_) {
         _depositToken = depositToken_;
 
         // Cannot be initialized again. 
@@ -67,6 +68,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         _startDate = startDate_;
         _maturityDate = maturityDate_;
         _cliff = cliff_;
+        transferOwnership(owner_);
     }
 
     function isContract(address account) internal view returns (bool) {
@@ -93,18 +95,19 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         IERC20(_depositToken).transferFrom(msg.sender, address(this), amount);
     }
 
-    //Function to claim Rewards
+    // Function to claim Rewards
     // Reward Can be claimed only after cliff
     function claim(address tokenAddress, uint amount) external {
         uint unclaimed;
         for(uint i = 1; i <= userPoolCount[msg.sender]; i++) {
-            if(userDeposits[msg.sender][i].depositTime >= block.timestamp + _cliff) {
-                unclaimed = getReward(tokenAddress, msg.sender, userDeposits[msg.sender][i].depositTime);
-            } 
+            if(block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
+                unclaimed = getReward(tokenAddress, msg.sender, i);
+            }
         }
-        require(IERC20(tokenAddress).balanceOf(address(this)) >= unclaimed);
-        IERC20(tokenAddress).transfer(msg.sender, unclaimed);
-        _claimed[tokenAddress] = unclaimed; 
+        require(unclaimed >= amount, "Trying to claim more than alloted");
+        require(IERC20(tokenAddress).balanceOf(address(this)) >= amount, "Insufficient reward balance in contract");
+        IERC20(tokenAddress).transfer(msg.sender, amount);
+        _claimed[tokenAddress] = amount; 
         emit Claim(tokenAddress, amount);
     }
 
@@ -126,9 +129,9 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         uint pendingAmount = amount;
         for(uint i = 1; i <= userPoolCount[msg.sender]; i++) {
             // Only after cliff
-            if(userDeposits[msg.sender][i].depositTime >= block.timestamp + _cliff) {
+            if(block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {  // Commented for unit testing (implement block increase)
                 // if first pool has greater amount than required, subract and do nothing
-                if(userDeposits[msg.sender][i].depositBalance > 0 &&userDeposits[msg.sender][i].depositBalance > pendingAmount) { 
+                if(userDeposits[msg.sender][i].depositBalance > 0 && userDeposits[msg.sender][i].depositBalance > pendingAmount) { 
                     IERC20(_depositToken).transfer(msg.sender, pendingAmount);
                     userDeposits[msg.sender][i].depositBalance -= pendingAmount;
                 }
