@@ -33,12 +33,14 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
         address depositToken_,
         uint256 startDate_,
         uint256 maturityDate_,
-        uint256 cliff_
+        uint256 cliff_,
+        address[] memory rewardTokens_,
+        uint[] memory rewardUnits_
     ) external nonReentrant onlyOwner returns (address){
         address newPool;
         if (isERC721(depositToken_)) {
             newPool = address(
-                new PoolERC721(depositToken_, startDate_, maturityDate_, cliff_, msg.sender)
+                new PoolERC721(depositToken_, startDate_, maturityDate_, cliff_, msg.sender, rewardTokens_, rewardUnits_)
             );
         } else if (isERC1155(depositToken_)) {
             newPool = address(0);
@@ -46,7 +48,7 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
         } else {
             // we assume if token address is ERC20 if it is not ERC721 or ERC1155
             newPool = address(
-                new PoolERC20(depositToken_, startDate_, maturityDate_, cliff_, msg.sender)
+                new PoolERC20(depositToken_, startDate_, maturityDate_, cliff_, msg.sender, rewardTokens_, rewardUnits_)
             );
         }
         pools.push(newPool);
