@@ -222,11 +222,9 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
             if (failedCount > 0) break;
             // Only after cliff
             if (
-                _cliff < 0 ||
-                _cliff < 0 ||
-                block.timestamp >
-                userDeposits[msg.sender][i].depositTime + _cliff
+                cliff() < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff
             ) {
+                // console.log("Inside loop is %o", block.timestamp);
                 // Commented for unit testing (implement block increase)
                 // if first pool has greater amount than required, subract and do nothing
                 if (

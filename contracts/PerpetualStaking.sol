@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 import "./PoolERC20.sol";
 import "./PoolERC721.sol";
 
 // Reward will always be in ERC20
 // Deposit can be in ERC20,ERC721,ERC1155
 // Declaring variable to private to have same state in inherited contracts
-contract PerpetualStaking is Ownable, ReentrancyGuard {
-    using ERC165Checker for address;
+contract PerpetualStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+    using ERC165CheckerUpgradeable for address;
 
     bytes4 public constant IID_IERC1155 = type(IERC1155).interfaceId;
     bytes4 public constant IID_IERC721 = type(IERC721).interfaceId;
@@ -28,6 +28,11 @@ contract PerpetualStaking is Ownable, ReentrancyGuard {
     );
 
     address[] private pools;
+
+    function initialize() public initializer {
+        ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
+        OwnableUpgradeable.__Ownable_init();
+    }
 
     function deployNewPool(
         address depositToken_,
