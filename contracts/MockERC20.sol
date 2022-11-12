@@ -4,8 +4,11 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+//@dev MockERC20 for testing
 contract MockERC20 is ERC20 {
     constructor(uint256 initialSupply) ERC20("Gold", "GLD") {
         _mint(msg.sender, initialSupply);
     }
+
+    receive() external payable{}
 }

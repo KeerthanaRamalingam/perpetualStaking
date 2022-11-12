@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./IPerpetualStaking.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract PoolERC20 is Ownable, ReentrancyGuard {
     //Pool Maturity date: This is the date on which contract will stop accepting fresh deposits and will also stop accruing the rewards.
