@@ -13,6 +13,8 @@ import "./PoolERC721.sol";
 // Reward will always be in ERC20
 // Deposit can be in ERC20,ERC721,ERC1155
 // Declaring variable to private to have same state in inherited contracts
+// @title Perpetual Staking contract act as factory to deploy new ERC20, ERC721, ERC1155 Pools.
+// @author @KeerthanaRamalingam
 contract PerpetualStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using ERC165CheckerUpgradeable for address;
 
@@ -34,6 +36,14 @@ contract PerpetualStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         OwnableUpgradeable.__Ownable_init();
     }
 
+    ///@notice Owner function to deploy new pools - ERC20,ERC721,ERC1155
+    ///@param depositToken_ Token for which pool is to be created
+    ///@param startDate_ Start time of the pool
+    ///@param maturityDate_ Maturity time of the pool
+    ///@param cliff_ Cliff of the pool
+    ///@param rewardTokens_ Reward token addresses of the pool. Expected to be ERC20 tokens
+    ///@param rewardUnits_ Reward Units to be given per deposit
+    ///@return Deployed pool address
     function deployNewPool(
         address depositToken_,
         uint256 startDate_,
