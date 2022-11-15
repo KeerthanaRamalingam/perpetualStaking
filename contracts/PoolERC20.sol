@@ -109,6 +109,8 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         _;
     }
 
+    ///@notice Users deposit "Deposit token" to the pool
+    ///@param amount Amount of token to deposit
     function deposit(uint256 amount) external nonReentrant isExpired {
         require(
             IERC20(_depositToken).balanceOf(msg.sender) >= amount,
@@ -170,6 +172,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         emit Claim(tokenAddress, unclaimed);
     }
 
+    ///@notice Claim the total rewards from all reward tokens
     function claim() external {
         uint256 unclaimed;
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {

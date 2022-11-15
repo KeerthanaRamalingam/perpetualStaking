@@ -16,7 +16,7 @@
 function claim() external nonpayable
 ```
 
-
+Claim the total rewards from all reward tokens
 
 
 
@@ -99,7 +99,7 @@ function cliff() external view returns (uint256)
 function deposit(uint256 amount) external nonpayable
 ```
 
-
+Users deposit &quot;Deposit token&quot; to the pool
 
 
 
@@ -107,7 +107,7 @@ function deposit(uint256 amount) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| amount | uint256 | undefined |
+| amount | uint256 | Amount of token to deposit |
 
 ### depositToken
 
