@@ -2,7 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require('@openzeppelin/hardhat-upgrades');
 require("dotenv").config()
 require("@nomiclabs/hardhat-etherscan");
-
+require('@primitivefi/hardhat-dodoc');
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
