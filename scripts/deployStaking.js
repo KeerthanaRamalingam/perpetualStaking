@@ -12,29 +12,29 @@ async function main() {
 
     // const rewardToken = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; // Change based on chain
 
-    const ERC20 = await ethers.getContractFactory("MockERC20");
-    const TokenInstancexEth = await ERC20.deploy("1000000000000000000000000000")
-    console.log("ERC20 Address", TokenInstancexEth.address);
-    const ERC20TokenAddress = TokenInstancexEth.address;
+    // const ERC20 = await ethers.getContractFactory("MockERC20");
+    // const TokenInstancexEth = await ERC20.deploy("1000000000000000000000000000")
+    // console.log("ERC20 Address", TokenInstancexEth.address);
+    const ERC20TokenAddress = "0x379312fB04aD1783D34B7C4FD676628aebfc7F98";//TokenInstancexEth.address;
 
-    const ERC20Reward = await ethers.getContractFactory("MockERC20");
-    const TokenInstanceERC20Reward = await ERC20Reward.deploy("1000000000000000000000000000")
-    console.log("RewardToken ERC20", TokenInstanceERC20Reward.address);
-    const rewardToken = TokenInstanceERC20Reward.address;
+    // const ERC20Reward = await ethers.getContractFactory("MockERC20");
+    // const TokenInstanceERC20Reward = await ERC20Reward.deploy("1000000000000000000000000000")
+    // console.log("RewardToken ERC20", TokenInstanceERC20Reward.address);
+    const rewardToken = "0x3eee4E624f52915bF19a30189C317353173aEb87";//TokenInstanceERC20Reward.address;
 
-    const MockERC721 = await ethers.getContractFactory("MockERC721");
-    const TokenInstanceMockERC721 = await MockERC721.deploy()
-    console.log("ERC721 Address", TokenInstanceMockERC721.address);
-    const ERC721TokenAddress = TokenInstanceMockERC721.address;
+    // const MockERC721 = await ethers.getContractFactory("MockERC721");
+    // const TokenInstanceMockERC721 = await MockERC721.deploy()
+    // console.log("ERC721 Address", TokenInstanceMockERC721.address);
+    const ERC721TokenAddress = "0x3Dd530B04F03553D2bfF6570Fa32DB67978a19Db";//TokenInstanceMockERC721.address;
 
     const PerpetualStaking = await ethers.getContractFactory("PerpetualStaking");
     const perpetualStaking = await upgrades.deployProxy(PerpetualStaking, { initializer: "initialize" });
     console.log("Perpetual Staking Proxy : ", perpetualStaking.address);
 
     // Example ERC20 Pool
-    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1668272647, 1668272647 + 2592000, 0, [rewardToken], [2]);
+    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1668588534, 1668588534 + 2592000, 0, [rewardToken], [2]);
     // Example ERC721 Pool
-    await perpetualStaking.deployNewPool(ERC721TokenAddress, 1668272647, 1668272647 + 2592000, 0, [rewardToken], [2]);
+    await perpetualStaking.deployNewPool(ERC721TokenAddress, 1668588534, 1668588534 + 2592000, 0, [rewardToken], [2]);
 
     await new Promise(res => setTimeout(res, 25000));
 

@@ -10,6 +10,29 @@
 
 ## Methods
 
+### accruedReward
+
+```solidity
+function accruedReward(address userAddress, address rewardTokenAddress) external view returns (uint256 rewardAmount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| userAddress | address | undefined |
+| rewardTokenAddress | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| rewardAmount | uint256 | undefined |
+
 ### claim
 
 ```solidity

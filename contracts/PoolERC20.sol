@@ -215,6 +215,12 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
                 _claimed[tokenAddress]);
     }
 
+    function accruedReward(address userAddress, address rewardTokenAddress) public view returns (uint rewardAmount) {
+        for (uint256 i = 1; i <= userPoolCount[userAddress]; i++) {
+            rewardAmount = getReward(rewardTokenAddress, msg.sender, i);
+        }
+    }
+
     // Withdraw deposit amount without reward
     // Withdraw happens only after cliff
     // Reward should be claimed seperately After cliff

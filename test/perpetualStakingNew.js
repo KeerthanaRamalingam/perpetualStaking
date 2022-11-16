@@ -167,6 +167,8 @@ describe("Perpetual Staking", function () {
             await poolERC20.deposit(amountToDeposit);
             expect(await poolERC20.getRewardPerUnitOfDeposit(mockERC20.address)).to.equal(2);
             await mockERC20.transfer(poolERC20.address, amountToClaim);
+            console.log("Get Reward", await poolERC20.getReward(mockERC20.address, owner.address, 1));
+            console.log("Accrued Reward", await poolERC20.accruedReward(owner.address, mockERC20.address));
             await poolERC20.claimWithTokenAndAmount(mockERC20.address, amountToClaim);
             expect(await poolERC20.claimed(mockERC20.address)).to.equal(amountToClaim);
         })
