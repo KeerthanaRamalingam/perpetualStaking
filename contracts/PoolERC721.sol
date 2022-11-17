@@ -189,7 +189,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         }
     }
 
-    function lastTimeRewardApplicable() public view returns (uint256) {
+    function lastTimeRewardApplicable() internal view returns (uint256) {
         return Math.min(block.timestamp, maturityDate());
     }
 
@@ -307,7 +307,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         return _claimed[tokenAddress];
     }
 
-    function userDeposit(address userAddress, uint256 poolCount)
+    function depositDetailsByID(address userAddress, uint256 poolCount)
         public
         view
         returns (Deposit memory depositdetails)

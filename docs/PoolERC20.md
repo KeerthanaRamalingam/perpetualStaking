@@ -80,7 +80,7 @@ function claimWithTokenAndAmount(address tokenAddress, uint256 amount) external 
 ### claimed
 
 ```solidity
-function claimed(address tokenAddress) external view returns (uint256)
+function claimed(address rewardTokenAddress) external view returns (uint256)
 ```
 
 
@@ -91,7 +91,7 @@ function claimed(address tokenAddress) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| tokenAddress | address | undefined |
+| rewardTokenAddress | address | undefined |
 
 #### Returns
 
@@ -132,6 +132,29 @@ Users deposit &quot;Deposit token&quot; to the pool
 |---|---|---|
 | amount | uint256 | Amount of token to deposit |
 
+### depositDetailsByID
+
+```solidity
+function depositDetailsByID(address userAddress, uint256 poolCount) external view returns (struct PoolERC20.Deposit depositdetails)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| userAddress | address | undefined |
+| poolCount | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| depositdetails | PoolERC20.Deposit | undefined |
+
 ### depositToken
 
 ```solidity
@@ -149,34 +172,10 @@ function depositToken() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
-### getReward
-
-```solidity
-function getReward(address tokenAddress, address user, uint256 depositID) external view returns (uint256 lastReward)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| tokenAddress | address | undefined |
-| user | address | undefined |
-| depositID | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| lastReward | uint256 | undefined |
-
 ### getRewardPerUnitOfDeposit
 
 ```solidity
-function getRewardPerUnitOfDeposit(address tokenAddress) external view returns (uint256)
+function getRewardPerUnitOfDeposit(address rewardTokenAddress) external view returns (uint256)
 ```
 
 
@@ -187,24 +186,7 @@ function getRewardPerUnitOfDeposit(address tokenAddress) external view returns (
 
 | Name | Type | Description |
 |---|---|---|
-| tokenAddress | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### lastTimeRewardApplicable
-
-```solidity
-function lastTimeRewardApplicable() external view returns (uint256)
-```
-
-
-
-
-
+| rewardTokenAddress | address | undefined |
 
 #### Returns
 
@@ -358,7 +340,7 @@ function updateTreasuryContract(address _treasuryContract) external nonpayable
 ### userDeposit
 
 ```solidity
-function userDeposit(address userAddress, uint256 poolCount) external view returns (struct PoolERC20.Deposit depositdetails)
+function userDeposit(address userAddress) external view returns (uint256 depositAmount)
 ```
 
 
@@ -370,13 +352,12 @@ function userDeposit(address userAddress, uint256 poolCount) external view retur
 | Name | Type | Description |
 |---|---|---|
 | userAddress | address | undefined |
-| poolCount | uint256 | undefined |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| depositdetails | PoolERC20.Deposit | undefined |
+| depositAmount | uint256 | undefined |
 
 ### userDepositCount
 

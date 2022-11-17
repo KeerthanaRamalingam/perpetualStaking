@@ -64,7 +64,7 @@ describe("Perpetual Staking", function () {
             const poolERC20 = await PoolERC20.attach(pools[0]);
             await mockERC20.approve(poolERC20.address, amountToDeposit);
             await poolERC20.deposit(amountToDeposit);
-            let depositDetails = await poolERC20.userDeposit(owner.address, 1);
+            let depositDetails = await poolERC20.depositDetailsByID(owner.address, 1);
             expect(depositDetails[0]).to.equal(amountToDeposit);
         })
         it("withdraw in ERC20 pool", async function () {
@@ -81,7 +81,7 @@ describe("Perpetual Staking", function () {
             // We can increase the time in Hardhat Network
             await time.increaseTo(await time.latest() + 60);
             await poolERC20.withdraw(amountToDeposit + 1E18);
-            let depositDetails = await poolERC20.userDeposit(owner.address, 1);
+            let depositDetails = await poolERC20.depositDetailsByID(owner.address, 1);
             expect(depositDetails[0]).to.equal(0);
             expect(ethers.utils.parseUnits("1000", 18)).to.equal(await mockERC20.balanceOf(owner.address));
         })
@@ -95,11 +95,11 @@ describe("Perpetual Staking", function () {
             await mockERC721.awardItem(owner.address, "https://game.io");
             await mockERC721.approve(poolERC721.address, 0);
             await poolERC721.deposit(0);
-            let depositDetails = await poolERC721.userDeposit(owner.address, 1);
+            let depositDetails = await poolERC721.depositDetailsByID(owner.address, 1);
             expect(depositDetails[0]).to.equal(0);
         })
         it("Withdraw in ERC721 pool", async function () {
-            const { perpetualStaking, mockERC721, PoolERC721, owner, mockERC20} = await loadFixture(
+            const { perpetualStaking, mockERC721, PoolERC721, owner, mockERC20 } = await loadFixture(
                 deployState
             );
             await perpetualStaking.deployNewPool(mockERC721.address, await time.latest() - 60, await time.latest() + 240, 0, [mockERC20.address], [2]);
@@ -109,10 +109,10 @@ describe("Perpetual Staking", function () {
             await mockERC721.approve(poolERC721.address, 0);
             await poolERC721.deposit(0);
             await poolERC721.withdraw(0);
-            let depositDetails = await poolERC721.userDeposit(owner.address, 1);
+            let depositDetails = await poolERC721.depositDetailsByID(owner.address, 1);
             expect(depositDetails[0]).to.equal(0);
         })
-        it("Should break the loop on first check", async function() {
+        it("Should break the loop on first check", async function () {
             const { perpetualStaking, mockERC20, PoolERC20, owner } = await loadFixture(
                 deployState
             );
@@ -121,7 +121,7 @@ describe("Perpetual Staking", function () {
             await perpetualStaking.deployNewPool(mockERC20.address, await time.latest() - 60, await time.latest() + 240, 0, [mockERC20.address], [2]);
             const pools = await perpetualStaking.poolsDeployed();
             const poolERC20 = await PoolERC20.attach(pools[0]);
-            await mockERC20.approve(poolERC20.address, amountToDeposit+amountToDeposit);
+            await mockERC20.approve(poolERC20.address, amountToDeposit + amountToDeposit);
             await poolERC20.deposit(amountToDeposit);
             // We can increase the time in Hardhat Network
             await time.increaseTo(await time.latest() + 30);
@@ -130,7 +130,7 @@ describe("Perpetual Staking", function () {
             await poolERC20.deposit(amountToDeposit);
 
             await poolERC20.withdraw(amountToDeposit + 1E18);
-            let depositDetails = await poolERC20.userDeposit(owner.address, 1);
+            let depositDetails = await poolERC20.depositDetailsByID(owner.address, 1);
             expect(depositDetails[0]).to.equal(0);
             expect(ethers.utils.parseUnits("1000", 18)).to.equal(await mockERC20.balanceOf(owner.address));
         })
@@ -147,9 +147,9 @@ describe("Perpetual Staking", function () {
             await poolERC20.deposit(amountToDeposit);
             await poolERC20.deposit(amountToDeposit);
             await poolERC20.withdraw(ethers.utils.parseUnits("11", 18));
-            let depositDetails = await poolERC20.userDeposit(owner.address, 1);
+            let depositDetails = await poolERC20.depositDetailsByID(owner.address, 1);
             expect(depositDetails[0]).to.equal(0);
-            let depositDetails1 = await poolERC20.userDeposit(owner.address, 2);
+            let depositDetails1 = await poolERC20.depositDetailsByID(owner.address, 2);
             expect(depositDetails1[0]).to.equal(ethers.utils.parseUnits("9", 18))
         })
         it("Should claim rewards in ERC20 Pool", async function () {
@@ -157,7 +157,7 @@ describe("Perpetual Staking", function () {
                 deployState
             );
             let amountToDeposit = 10;
-            let amountToClaim = 40;
+            let amountToClaim = 60;
             amountToDeposit = ethers.utils.parseUnits(amountToDeposit.toString(), 18);
             amountToClaim = ethers.utils.parseUnits(amountToClaim.toString(), 18);
             await perpetualStaking.deployNewPool(mockERC20.address, await time.latest() - 60, await time.latest() + 240, 0, [mockERC20.address], [2]);
@@ -165,11 +165,16 @@ describe("Perpetual Staking", function () {
             const poolERC20 = await PoolERC20.attach(pools[0]);
             await mockERC20.approve(poolERC20.address, amountToDeposit + amountToDeposit);
             await poolERC20.deposit(amountToDeposit);
+            await poolERC20.deposit(amountToDeposit);
+            console.log(await poolERC20.userDeposit(owner.address));
+            expect(Number(await poolERC20.userDeposit(owner.address))).to.equal(Number(amountToDeposit) + Number(amountToDeposit))
             expect(await poolERC20.getRewardPerUnitOfDeposit(mockERC20.address)).to.equal(2);
             await mockERC20.transfer(poolERC20.address, amountToClaim);
-            console.log("Get Reward", await poolERC20.getReward(mockERC20.address, owner.address, 1));
             console.log("Accrued Reward", await poolERC20.accruedReward(owner.address, mockERC20.address));
-            await poolERC20.claimWithTokenAndAmount(mockERC20.address, amountToClaim);
+            console.log("count", await poolERC20.userDepositCount(owner.address));
+            await poolERC20.claim();
+            console.log("___claimed", await poolERC20.___claimed());
+            console.log("claimed", await poolERC20.claimed(mockERC20.address));
             expect(await poolERC20.claimed(mockERC20.address)).to.equal(amountToClaim);
         })
         it("should claim reward in ERC721 pool", async function () {
@@ -185,9 +190,9 @@ describe("Perpetual Staking", function () {
             await mockERC721.approve(poolERC721.address, 0);
             await poolERC721.deposit(0);
             expect(await poolERC721.getRewardPerUnitOfDeposit(mockERC20.address)).to.equal(2);
-            await mockERC20.transfer(poolERC721.address, amountToClaim);
-            await poolERC721.claimWithTokenAndAmount(mockERC20.address, amountToClaim);
-            expect(await poolERC721.claimed(mockERC20.address)).to.equal(amountToClaim);
+            await mockERC20.transfer(poolERC721.address, 3);
+            await poolERC721.claim();
+            expect(await poolERC721.claimed(mockERC20.address)).to.equal(3);
         })
     });
 });

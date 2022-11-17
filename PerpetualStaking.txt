@@ -1,0 +1,89 @@
+--------------------------------------------
+		READ FUNCTIONS:
+--------------------------------------------
+1. depositToken() return address
+	-returns the deposit token address
+
+2. rewardTokenCount() return uint256
+	- returns the count of reward tokens
+
+3. rewardToken(rewardTokenIndex uint256) return address
+	- returns the reward token address of the specific index
+
+4. startDate() return uint256
+	- returns the staking program start date
+
+5. endDate() return uint256
+	- returns the staking program end date
+
+6. cliff() return uint256
+	- returns the cliff duration
+
+7. owner() return address
+	- returns the owner address
+
+8. treasury() returns address
+	- returns treasury contract address
+
+9. platformFee() return uint256
+	- returns the current platform fee
+
+10. totalDeposit() returns uint256
+	- returns the total deposit amount in the pool
+
+11. userDepositCount(userAddress address) return uint256
+	- returns the count of deposits against the userAddress
+
+12. userDeposit(userAddress address) returns uint256
+	- returns the total amount deposited by the user
+
+13. depositDetailsByID(userAddress address, depositIndex uint256) returns uint256
+	- returns the amount deposited by the user at specific index
+
+14. accruedReward(userAddress address) return uint256
+	- returns users total accrued rewards
+
+15. totalClaimed(rewardTokenAddress address) return uint256
+	- returns total amount claimed from the pool for a specific token
+
+16. userClaimed(userAddress address, rewardTokenAddress address) return uint256
+	- returns total amount claimed by the user for a specific reward token
+
+16. userTotalWithdrawl(userAddress address) return uint256
+	- returns total amount withdrawl by the user
+
+17. getRewardPerUnitOfDeposit(rewardTokenAddress address) - return uint256
+	- returns unit of reward given for unit of deposit
+
+--------------------------------------------
+		WRITE FUNCTIONS:
+--------------------------------------------
+
+
+1. claimAllReward()
+	- to claim all the accrued rewards in a single transaction
+
+2. claimTokenReward(rewardTokenAddress address)
+	- to claim all the accrued reward for a specific reward token
+
+3. deposit(amount uint256)
+	- to deposit token
+
+4. withdraw(amount uint256)
+	- to withdraw amount against deposits
+
+5. updateEndDate(endDate uint256)
+	- to update the pool end date
+
+6. updatePlatformFee(feePercentage uint256)
+	- to update the platform fee percentage
+
+7. updateTreasury(newContractAddress address)
+	- to update treasury contract address
+
+8. transferOwnership(newOwnerAddress address)
+	- to transfer the ownership of pool
+
+9. renounceOwnership()
+	- to renounce pool ownership
+

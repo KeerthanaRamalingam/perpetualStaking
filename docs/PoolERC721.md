@@ -109,6 +109,29 @@ function deposit(uint256 nftID) external nonpayable
 |---|---|---|
 | nftID | uint256 | undefined |
 
+### depositDetailsByID
+
+```solidity
+function depositDetailsByID(address userAddress, uint256 poolCount) external view returns (struct PoolERC721.Deposit depositdetails)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| userAddress | address | undefined |
+| poolCount | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| depositdetails | PoolERC721.Deposit | undefined |
+
 ### depositToken
 
 ```solidity
@@ -165,23 +188,6 @@ function getRewardPerUnitOfDeposit(address tokenAddress) external view returns (
 | Name | Type | Description |
 |---|---|---|
 | tokenAddress | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### lastTimeRewardApplicable
-
-```solidity
-function lastTimeRewardApplicable() external view returns (uint256)
-```
-
-
-
-
-
 
 #### Returns
 
@@ -356,29 +362,6 @@ function updateTreasuryContract(address _treasuryContract) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | _treasuryContract | address | undefined |
-
-### userDeposit
-
-```solidity
-function userDeposit(address userAddress, uint256 poolCount) external view returns (struct PoolERC721.Deposit depositdetails)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| userAddress | address | undefined |
-| poolCount | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| depositdetails | PoolERC721.Deposit | undefined |
 
 ### userDepositCount
 
