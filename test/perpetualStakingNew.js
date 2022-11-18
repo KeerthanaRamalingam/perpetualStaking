@@ -157,7 +157,7 @@ describe("Perpetual Staking", function () {
                 deployState
             );
             let amountToDeposit = 10;
-            let amountToClaim = 60;
+            let amountToClaim = 100;
             amountToDeposit = ethers.utils.parseUnits(amountToDeposit.toString(), 18);
             amountToClaim = ethers.utils.parseUnits(amountToClaim.toString(), 18);
             await perpetualStaking.deployNewPool(mockERC20.address, await time.latest() - 60, await time.latest() + 240, 0, [mockERC20.address], [2]);
@@ -166,14 +166,14 @@ describe("Perpetual Staking", function () {
             await mockERC20.approve(poolERC20.address, amountToDeposit + amountToDeposit);
             await poolERC20.deposit(amountToDeposit);
             await poolERC20.deposit(amountToDeposit);
-            console.log(await poolERC20.userDeposit(owner.address));
+            console.log(await poolERC20.depositDetailsByID(owner.address,1));
+            console.log(await poolERC20.depositDetailsByID(owner.address,2));
             expect(Number(await poolERC20.userDeposit(owner.address))).to.equal(Number(amountToDeposit) + Number(amountToDeposit))
             expect(await poolERC20.getRewardPerUnitOfDeposit(mockERC20.address)).to.equal(2);
             await mockERC20.transfer(poolERC20.address, amountToClaim);
-            console.log("Accrued Reward", await poolERC20.accruedReward(owner.address, mockERC20.address));
+            console.log("Accrued Reward erc20", await poolERC20.accruedReward(owner.address, mockERC20.address));
             console.log("count", await poolERC20.userDepositCount(owner.address));
             await poolERC20.claim();
-            console.log("___claimed", await poolERC20.___claimed());
             console.log("claimed", await poolERC20.claimed(mockERC20.address));
             expect(await poolERC20.claimed(mockERC20.address)).to.equal(amountToClaim);
         })
@@ -181,18 +181,28 @@ describe("Perpetual Staking", function () {
             const { perpetualStaking, mockERC721, mockERC20, PoolERC721, owner } = await loadFixture(
                 deployState
             );
-            let amountToClaim = 2;
+            let amountToClaim = 22;
             amountToClaim = ethers.utils.parseUnits(amountToClaim.toString(), 18);
             await perpetualStaking.deployNewPool(mockERC721.address, await time.latest() - 60, await time.latest() + 240, 0, [mockERC20.address], [2]);
             const pools = await perpetualStaking.poolsDeployed();
             const poolERC721 = await PoolERC721.attach(pools[0]);
             await mockERC721.awardItem(owner.address, "https://game.io");
+            await mockERC721.awardItem(owner.address, "https://game.io");
+            await mockERC721.awardItem(owner.address, "https://game.io");
             await mockERC721.approve(poolERC721.address, 0);
+            await mockERC721.approve(poolERC721.address, 1);
             await poolERC721.deposit(0);
+            await poolERC721.deposit(1);
+            // We can increase the time in Hardhat Network
+            await time.increaseTo(await time.latest() + 3);
+            console.log(await poolERC721.userDepositCount(owner.address));
+            console.log(await poolERC721.userDeposit(owner.address));
             expect(await poolERC721.getRewardPerUnitOfDeposit(mockERC20.address)).to.equal(2);
-            await mockERC20.transfer(poolERC721.address, 3);
+            console.log("get reward of 2",await poolERC721.getReward(mockERC20.address, owner.address, 1));
+            console.log("Accrued Reward", await poolERC721.accruedReward(owner.address, mockERC20.address));
+            await mockERC20.transfer(poolERC721.address, amountToClaim);
             await poolERC721.claim();
-            expect(await poolERC721.claimed(mockERC20.address)).to.equal(3);
+            expect(await poolERC721.claimed(mockERC20.address)).to.equal(amountToClaim);
         })
     });
 });

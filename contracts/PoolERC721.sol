@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./IPerpetualStaking.sol";
+
 // import "hardhat/console.sol";
 
 contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
@@ -168,24 +169,21 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
 
     function claim() external {
         uint256 unclaimed;
-        for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
-            if (
-                _cliff < 0 ||
-                block.timestamp >
-                userDeposits[msg.sender][i].depositTime + _cliff
-            ) {
-                for (uint256 j = 0; j < rewardTokens.length; j++) {
-                    unclaimed = getReward(rewardTokens[j], msg.sender, j);
-                    require(
-                        IERC20(rewardTokens[j]).balanceOf(address(this)) >=
-                            unclaimed,
-                        "Insufficient reward balance in contract"
-                    );
-                    IERC20(rewardTokens[j]).transfer(msg.sender, unclaimed);
-                    _claimed[rewardTokens[j]] = unclaimed;
-                    emit Claim(rewardTokens[j], unclaimed);
-                }
+        for (uint256 j = 0; j < rewardTokens.length; j++) {
+            for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
+                if (
+                    _cliff < 0 ||
+                    block.timestamp >
+                    userDeposits[msg.sender][i].depositTime + _cliff
+                ) unclaimed += getReward(rewardTokens[j], msg.sender, i);
             }
+            require(
+                IERC20(rewardTokens[j]).balanceOf(address(this)) >= unclaimed,
+                "Insufficient reward balance in contract"
+            );
+            IERC20(rewardTokens[j]).transfer(msg.sender, unclaimed);
+            _claimed[rewardTokens[j]] += unclaimed;
+            emit Claim(rewardTokens[j], unclaimed);
         }
     }
 
@@ -206,6 +204,22 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
             (((lastTimeRewardApplicable() -
                 userDeposits[user][depositID].depositTime) * rewardCount) -
                 _claimed[tokenAddress]);
+    }
+
+    function accruedReward(address userAddress, address rewardTokenAddress)
+        public
+        view
+        returns (uint256 rewardAmount)
+    {
+        for (uint256 i = 1; i <= userPoolCount[userAddress]; i++) {
+            if (
+                _cliff < 0 ||
+                block.timestamp >
+                userDeposits[msg.sender][i].depositTime + _cliff
+            ) {
+                rewardAmount += getReward(rewardTokenAddress, msg.sender, i);
+            }
+        }
     }
 
     // Withdraw deposit amount without reward
@@ -307,12 +321,12 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         return _claimed[tokenAddress];
     }
 
-    function depositDetailsByID(address userAddress, uint256 poolCount)
+    function depositDetailsByID(address userAddress, uint256 depositID)
         public
         view
         returns (Deposit memory depositdetails)
     {
-        return userDeposits[userAddress][poolCount];
+        return userDeposits[userAddress][depositID];
     }
 
     function userDepositCount(address userAddress)
@@ -321,5 +335,15 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         returns (uint256)
     {
         return userPoolCount[userAddress];
+    }
+
+    function userDeposit(address userAddress)
+        public
+        view
+        returns (uint256 balance)
+    {
+        for (uint256 i = 1; i <= userPoolCount[userAddress]; i++) {
+            balance += 1;
+        }
     }
 }

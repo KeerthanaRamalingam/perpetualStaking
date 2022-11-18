@@ -10,6 +10,29 @@
 
 ## Methods
 
+### accruedReward
+
+```solidity
+function accruedReward(address userAddress, address rewardTokenAddress) external view returns (uint256 rewardAmount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| userAddress | address | undefined |
+| rewardTokenAddress | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| rewardAmount | uint256 | undefined |
+
 ### claim
 
 ```solidity
@@ -112,7 +135,7 @@ function deposit(uint256 nftID) external nonpayable
 ### depositDetailsByID
 
 ```solidity
-function depositDetailsByID(address userAddress, uint256 poolCount) external view returns (struct PoolERC721.Deposit depositdetails)
+function depositDetailsByID(address userAddress, uint256 depositID) external view returns (struct PoolERC721.Deposit depositdetails)
 ```
 
 
@@ -124,7 +147,7 @@ function depositDetailsByID(address userAddress, uint256 poolCount) external vie
 | Name | Type | Description |
 |---|---|---|
 | userAddress | address | undefined |
-| poolCount | uint256 | undefined |
+| depositID | uint256 | undefined |
 
 #### Returns
 
@@ -362,6 +385,28 @@ function updateTreasuryContract(address _treasuryContract) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | _treasuryContract | address | undefined |
+
+### userDeposit
+
+```solidity
+function userDeposit(address userAddress) external view returns (uint256 balance)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| userAddress | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| balance | uint256 | undefined |
 
 ### userDepositCount
 

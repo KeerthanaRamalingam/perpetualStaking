@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./IPerpetualStaking.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract PoolERC20 is Ownable, ReentrancyGuard {
     //Pool Maturity date: This is the date on which contract will stop accepting fresh deposits and will also stop accruing the rewards.
@@ -177,21 +177,22 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     function claim() external {
         uint256 unclaimed;
         for (uint256 j = 0; j < rewardTokens.length; j++) {
-            for (uint256 i = 1; i < userPoolCount[msg.sender]; i++) {
+            for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
                 if (
                     _cliff < 0 ||
                     block.timestamp >
                     userDeposits[msg.sender][i].depositTime + _cliff
-                ) unclaimed = getReward(rewardTokens[j], msg.sender, i);
-                require(
-                    IERC20(rewardTokens[j]).balanceOf(address(this)) >=
-                        unclaimed,
-                    "Insufficient reward balance in contract"
-                );
-                IERC20(rewardTokens[j]).transfer(msg.sender, unclaimed);
-                _claimed[rewardTokens[j]] += unclaimed;
-                emit Claim(rewardTokens[j], unclaimed);
+                ) {
+                    unclaimed += getReward(rewardTokens[j], msg.sender, i);
+                }
             }
+            require(
+                IERC20(rewardTokens[j]).balanceOf(address(this)) >= unclaimed,
+                "Insufficient reward balance in contract"
+            );
+            IERC20(rewardTokens[j]).transfer(msg.sender, unclaimed);
+            _claimed[rewardTokens[j]] += unclaimed;
+            emit Claim(rewardTokens[j], unclaimed);
         }
     }
 
@@ -266,6 +267,10 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         }
     }
 
+    function withdrawRewards(address rewardTokenAddress) external onlyOwner {
+        IERC20(rewardTokenAddress).transfer(msg.sender, address(this).balance);
+    }
+
     function getRewardPerUnitOfDeposit(address rewardTokenAddress)
         public
         view
@@ -333,12 +338,12 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         return _claimed[rewardTokenAddress];
     }
 
-    function depositDetailsByID(address userAddress, uint256 poolCount)
+    function depositDetailsByID(address userAddress, uint256 depositID)
         public
         view
         returns (Deposit memory depositdetails)
     {
-        return userDeposits[userAddress][poolCount];
+        return userDeposits[userAddress][depositID];
     }
 
     function userDepositCount(address userAddress)

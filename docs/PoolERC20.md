@@ -135,7 +135,7 @@ Users deposit &quot;Deposit token&quot; to the pool
 ### depositDetailsByID
 
 ```solidity
-function depositDetailsByID(address userAddress, uint256 poolCount) external view returns (struct PoolERC20.Deposit depositdetails)
+function depositDetailsByID(address userAddress, uint256 depositID) external view returns (struct PoolERC20.Deposit depositdetails)
 ```
 
 
@@ -147,7 +147,7 @@ function depositDetailsByID(address userAddress, uint256 poolCount) external vie
 | Name | Type | Description |
 |---|---|---|
 | userAddress | address | undefined |
-| poolCount | uint256 | undefined |
+| depositID | uint256 | undefined |
 
 #### Returns
 
@@ -396,6 +396,22 @@ function withdraw(uint256 amount) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | amount | uint256 | undefined |
+
+### withdrawRewards
+
+```solidity
+function withdrawRewards(address rewardTokenAddress) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| rewardTokenAddress | address | undefined |
 
 
 
