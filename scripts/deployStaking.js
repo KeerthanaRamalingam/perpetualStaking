@@ -32,9 +32,9 @@ async function main() {
     console.log("Perpetual Staking Proxy : ", perpetualStaking.address);
 
     // Example ERC20 Pool
-    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1668708267, 1668708267 + 2592000, 0, [rewardToken], [2]);
+    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1669040564, 1669040564 + 2592000, 0, [rewardToken], [2]);
     // Example ERC721 Pool
-    await perpetualStaking.deployNewPool(ERC721TokenAddress, 1668708267, 1668708267 + 2592000, 0, [rewardToken], [2]);
+    await perpetualStaking.deployNewPool(ERC721TokenAddress, 1669040564, 1669040564 + 2592000, 0, [rewardToken], [2]);
 
     await new Promise(res => setTimeout(res, 25000));
 

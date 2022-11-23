@@ -167,7 +167,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         emit Claim(tokenAddress, unclaimed);
     }
 
-    function claim() external {
+    function claimAllReward() external {
         uint256 unclaimed;
         for (uint256 j = 0; j < rewardTokens.length; j++) {
             for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {

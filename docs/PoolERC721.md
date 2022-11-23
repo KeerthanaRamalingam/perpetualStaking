@@ -33,10 +33,10 @@ function accruedReward(address userAddress, address rewardTokenAddress) external
 |---|---|---|
 | rewardAmount | uint256 | undefined |
 
-### claim
+### claimAllReward
 
 ```solidity
-function claim() external nonpayable
+function claimAllReward() external nonpayable
 ```
 
 

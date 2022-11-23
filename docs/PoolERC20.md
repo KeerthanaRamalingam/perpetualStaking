@@ -13,7 +13,7 @@
 ### accruedReward
 
 ```solidity
-function accruedReward(address userAddress, address rewardTokenAddress) external view returns (uint256 rewardAmount)
+function accruedReward(address userAddress) external view returns (uint256 rewardAmount)
 ```
 
 
@@ -25,7 +25,6 @@ function accruedReward(address userAddress, address rewardTokenAddress) external
 | Name | Type | Description |
 |---|---|---|
 | userAddress | address | undefined |
-| rewardTokenAddress | address | undefined |
 
 #### Returns
 
@@ -33,10 +32,10 @@ function accruedReward(address userAddress, address rewardTokenAddress) external
 |---|---|---|
 | rewardAmount | uint256 | undefined |
 
-### claim
+### claimAllReward
 
 ```solidity
-function claim() external nonpayable
+function claimAllReward() external nonpayable
 ```
 
 Claim the total rewards from all reward tokens
@@ -44,43 +43,10 @@ Claim the total rewards from all reward tokens
 
 
 
-### claimWithToken
+### claimTokenReward
 
 ```solidity
-function claimWithToken(address tokenAddress) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| tokenAddress | address | undefined |
-
-### claimWithTokenAndAmount
-
-```solidity
-function claimWithTokenAndAmount(address tokenAddress, uint256 amount) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| tokenAddress | address | undefined |
-| amount | uint256 | undefined |
-
-### claimed
-
-```solidity
-function claimed(address rewardTokenAddress) external view returns (uint256)
+function claimTokenReward(address rewardTokenAddress) external nonpayable
 ```
 
 
@@ -92,12 +58,6 @@ function claimed(address rewardTokenAddress) external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | rewardTokenAddress | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
 
 ### cliff
 
@@ -135,7 +95,7 @@ Users deposit &quot;Deposit token&quot; to the pool
 ### depositDetailsByID
 
 ```solidity
-function depositDetailsByID(address userAddress, uint256 depositID) external view returns (struct PoolERC20.Deposit depositdetails)
+function depositDetailsByID(address userAddress, uint256 depositIndex) external view returns (struct PoolERC20.Deposit depositdetails)
 ```
 
 
@@ -147,7 +107,7 @@ function depositDetailsByID(address userAddress, uint256 depositID) external vie
 | Name | Type | Description |
 |---|---|---|
 | userAddress | address | undefined |
-| depositID | uint256 | undefined |
+| depositIndex | uint256 | undefined |
 
 #### Returns
 
@@ -172,6 +132,23 @@ function depositToken() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
+### endDate
+
+```solidity
+function endDate() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getRewardPerUnitOfDeposit
 
 ```solidity
@@ -187,23 +164,6 @@ function getRewardPerUnitOfDeposit(address rewardTokenAddress) external view ret
 | Name | Type | Description |
 |---|---|---|
 | rewardTokenAddress | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### maturityDate
-
-```solidity
-function maturityDate() external view returns (uint256)
-```
-
-
-
-
-
 
 #### Returns
 
@@ -228,6 +188,23 @@ function owner() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
+### platformFee
+
+```solidity
+function platformFee() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### renounceOwnership
 
 ```solidity
@@ -239,10 +216,71 @@ function renounceOwnership() external nonpayable
 *Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.*
 
 
+### rewardToken
+
+```solidity
+function rewardToken(uint256 rewardTokenIndex) external view returns (address)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| rewardTokenIndex | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
 ### startDate
 
 ```solidity
 function startDate() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### totalClaimed
+
+```solidity
+function totalClaimed(address rewardTokenAddress) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| rewardTokenAddress | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### totalDeposit
+
+```solidity
+function totalDeposit() external view returns (uint256)
 ```
 
 
@@ -272,10 +310,10 @@ function transferOwnership(address newOwner) external nonpayable
 |---|---|---|
 | newOwner | address | undefined |
 
-### treasuryContract
+### treasury
 
 ```solidity
-function treasuryContract() external view returns (address)
+function treasury() external view returns (address)
 ```
 
 
@@ -289,10 +327,10 @@ function treasuryContract() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
-### updateMaturityDate
+### updateEndDate
 
 ```solidity
-function updateMaturityDate(uint256 newMaturityDate) external nonpayable
+function updateEndDate(uint256 _endDate) external nonpayable
 ```
 
 
@@ -303,7 +341,7 @@ function updateMaturityDate(uint256 newMaturityDate) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| newMaturityDate | uint256 | undefined |
+| _endDate | uint256 | undefined |
 
 ### updatePlatformFee
 
@@ -321,10 +359,10 @@ function updatePlatformFee(uint256 newPlatformFee) external nonpayable
 |---|---|---|
 | newPlatformFee | uint256 | undefined |
 
-### updateTreasuryContract
+### updateTreasury
 
 ```solidity
-function updateTreasuryContract(address _treasuryContract) external nonpayable
+function updateTreasury(address newContractAddress) external nonpayable
 ```
 
 
@@ -335,7 +373,30 @@ function updateTreasuryContract(address _treasuryContract) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| _treasuryContract | address | undefined |
+| newContractAddress | address | undefined |
+
+### userClaimed
+
+```solidity
+function userClaimed(address userAddress, address rewardTokenAddress) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| userAddress | address | undefined |
+| rewardTokenAddress | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### userDeposit
 
@@ -381,6 +442,28 @@ function userDepositCount(address userAddress) external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### userTotalWithdrawl
+
+```solidity
+function userTotalWithdrawl(address userAddress) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| userAddress | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### withdraw
 
 ```solidity
@@ -396,22 +479,6 @@ function withdraw(uint256 amount) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | amount | uint256 | undefined |
-
-### withdrawRewards
-
-```solidity
-function withdrawRewards(address rewardTokenAddress) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| rewardTokenAddress | address | undefined |
 
 
 

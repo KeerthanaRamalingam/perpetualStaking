@@ -173,7 +173,7 @@ describe("Perpetual Staking", function () {
             await mockERC20.transfer(poolERC20.address, amountToClaim);
             console.log("Accrued Reward erc20", await poolERC20.accruedReward(owner.address, mockERC20.address));
             console.log("count", await poolERC20.userDepositCount(owner.address));
-            await poolERC20.claim();
+            await poolERC20.claimAllReward();
             console.log("claimed", await poolERC20.claimed(mockERC20.address));
             expect(await poolERC20.claimed(mockERC20.address)).to.equal(amountToClaim);
         })
@@ -201,7 +201,7 @@ describe("Perpetual Staking", function () {
             console.log("get reward of 2",await poolERC721.getReward(mockERC20.address, owner.address, 1));
             console.log("Accrued Reward", await poolERC721.accruedReward(owner.address, mockERC20.address));
             await mockERC20.transfer(poolERC721.address, amountToClaim);
-            await poolERC721.claim();
+            await poolERC721.claimAllReward();
             expect(await poolERC721.claimed(mockERC20.address)).to.equal(amountToClaim);
         })
     });

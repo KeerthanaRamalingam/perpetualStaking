@@ -53,7 +53,7 @@
 	- returns total amount withdrawl by the user
 
 17. getRewardPerUnitOfDeposit(rewardTokenAddress address) - return uint256
-	- returns unit of reward given for unit of deposit
+	- returns unit of reward given for unit of deposit per block
 
 --------------------------------------------
 		WRITE FUNCTIONS:
