@@ -238,6 +238,23 @@ function rewardToken(uint256 rewardTokenIndex) external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
+### rewardTokenCount
+
+```solidity
+function rewardTokenCount() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### startDate
 
 ```solidity

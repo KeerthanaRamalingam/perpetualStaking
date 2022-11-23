@@ -396,6 +396,10 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         return _rewardTokens[rewardTokenIndex];
     }
 
+    function rewardTokenCount() public view returns (uint256) {
+        return _rewardTokens.length;
+    }
+
     function totalClaimed(address rewardTokenAddress)
         public
         view
