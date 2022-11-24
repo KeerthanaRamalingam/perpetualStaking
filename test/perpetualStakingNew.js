@@ -58,7 +58,7 @@ describe("Perpetual Staking", function () {
                 deployState
             );
             let amountToDeposit = 10;
-            amountToDeposit = ethers.utils.parseUnits(amountToDeposit.toString(), 18);
+            // amountToDeposit = ethers.utils.parseUnits(amountToDeposit.toString(), 18);
             await perpetualStaking.deployNewPool(mockERC20.address, await time.latest() - 60, await time.latest() + 240, 0, [mockERC20.address], [2]);
             const pools = await perpetualStaking.poolsDeployed();
             const poolERC20 = await PoolERC20.attach(pools[0]);
@@ -66,6 +66,7 @@ describe("Perpetual Staking", function () {
             await poolERC20.deposit(amountToDeposit);
             let depositDetails = await poolERC20.depositDetailsByID(owner.address, 1);
             expect(depositDetails[0]).to.equal(amountToDeposit);
+            console.log("User Deposit", await poolERC20.userDeposit(owner.address));
         })
         it("withdraw in ERC20 pool", async function () {
             const { perpetualStaking, mockERC20, PoolERC20, owner } = await loadFixture(

@@ -380,7 +380,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         returns (uint256 depositAmount)
     {
         for (uint256 i = 1; i <= userPoolCount[userAddress]; i++) {
-            depositAmount += userDeposits[msg.sender][i].depositBalance;
+            depositAmount += userDeposits[userAddress][i].depositBalance;
         }
     }
 
