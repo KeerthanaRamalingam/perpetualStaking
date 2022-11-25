@@ -24,7 +24,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     uint256 private _platformFee;
 
     // Treasury to maintain platform fee
-    address private _treasury;
+    address payable private _treasury;
 
     //Maintain reward for each tokens
     address[] private _rewardTokens;
@@ -45,6 +45,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     struct Deposit {
         uint256 depositBalance;
         uint256 depositTime;
+        uint256 fee;
     }
 
     //Maintain multiple deposits of users
@@ -122,51 +123,44 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     function deposit(uint256 amount) external nonReentrant isExpired {
         require(
             IERC20(_depositToken).balanceOf(msg.sender) >= amount,
-            "You are not the Owner"
+            "Insufficient balance"
         );
-        userPoolCount[msg.sender]++;
-        _totalDeposit += amount;
+        uint256 helper = calculatePlatformFee(amount);
+        uint256 amountToTransfer = amount;
+        if (helper > 0) {
+            IERC20(_depositToken).transferFrom(msg.sender, treasury(), helper);
+            amountToTransfer = amount - helper;
+        }
+        _totalDeposit += amountToTransfer;
         userDeposits[msg.sender][userPoolCount[msg.sender]] = Deposit(
             amount,
-            block.timestamp
+            block.timestamp,
+            helper
         );
-        IERC20(_depositToken).transferFrom(msg.sender, address(this), amount);
+        userPoolCount[msg.sender]++;
+        IERC20(_depositToken).transferFrom(
+            msg.sender,
+            address(this),
+            amountToTransfer
+        );
     }
 
-    // -------------------- CLAIM ALL TOKEN REWARD IN ONE GO (NO INPUT) ----------------------------- //
-    // -------------------- ONE WITHOUT AMOUNT ----------------------//
-    // Function to claim Rewards
-    // Reward Can be claimed only after cliff
-    // function claimWithTokenAndAmount(address rewardTokenAddress, uint256 amount)
-    //     external
-    // {
-    //     uint256 unclaimed;
-    //     for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
-    //         if (
-    //             _cliff < 0 ||
-    //             block.timestamp >
-    //             userDeposits[msg.sender][i].depositTime + _cliff
-    //         ) {
-    //             unclaimed = getReward(rewardTokenAddress, msg.sender, i);
-    //         }
-    //     }
-    //     // console.log("Unclaimed is %o", unclaimed);
-    //     require(unclaimed >= amount, "Trying to claim more than alloted");
-    //     require(
-    //         IERC20(rewardTokenAddress).balanceOf(address(this)) >= amount,
-    //         "Insufficient reward balance in contract"
-    //     );
-    //     IERC20(rewardTokenAddress).transfer(msg.sender, amount);
-    //     _claimed[rewardTokenAddress] = amount;
-    //     emit Claim(rewardTokenAddress, amount);
-    // }
+    function calculatePlatformFee(uint256 amount)
+        public
+        view
+        returns (uint256 _toTreasury)
+    {
+        if (_platformFee > 0) {
+            _toTreasury = (amount * _platformFee) / 10000;
+        }
+    }
 
     function claimTokenReward(address rewardTokenAddress)
         external
         nonReentrant
     {
         uint256 unclaimed;
-        for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
+        for (uint256 i = 0; i <= userPoolCount[msg.sender]; i++) {
             if (
                 _cliff < 0 ||
                 block.timestamp >
@@ -189,7 +183,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     function claimAllReward() external nonReentrant {
         uint256 unclaimed;
         for (uint256 j = 0; j < _rewardTokens.length; j++) {
-            for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
+            for (uint256 i = 0; i <= userPoolCount[msg.sender]; i++) {
                 if (
                     _cliff < 0 ||
                     block.timestamp >
@@ -218,14 +212,14 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         address tokenAddress,
         address user,
         uint256 depositID
-    ) internal view returns (uint256 lastReward) {
+    ) public view returns (uint256 lastReward) {
         uint256 rewardCount = getRewardPerUnitOfDeposit(tokenAddress) *
             userDeposits[user][depositID].depositBalance;
         lastReward =
             lastReward +
             (((lastTimeRewardApplicable() -
                 userDeposits[user][depositID].depositTime) * rewardCount) -
-                _claimed[tokenAddress]);
+                _userClaimed[user][tokenAddress]);
     }
 
     function accruedReward(address userAddress)
@@ -234,13 +228,13 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         returns (uint256 rewardAmount)
     {
         for (uint256 j = 0; j < _rewardTokens.length; j++) {
-            for (uint256 i = 1; i <= userPoolCount[userAddress]; i++) {
+            for (uint256 i = 0; i <= userPoolCount[userAddress]; i++) {
                 if (
                     _cliff < 0 ||
                     block.timestamp >
-                    userDeposits[msg.sender][i].depositTime + _cliff
+                    userDeposits[userAddress][i].depositTime + _cliff
                 ) {
-                    rewardAmount += getReward(_rewardTokens[j], msg.sender, i);
+                    rewardAmount += getReward(_rewardTokens[j], userAddress, i);
                 }
             }
         }
@@ -252,7 +246,8 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     function withdraw(uint256 amount) external {
         uint256 pendingAmount = amount;
         uint256 failedCount;
-        for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
+        uint256 balafterFee;
+        for (uint256 i = 0; i <= userPoolCount[msg.sender]; i++) {
             if (failedCount > 0) break;
             // Only after cliff
             if (
@@ -260,13 +255,15 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
                 block.timestamp >
                 userDeposits[msg.sender][i].depositTime + _cliff
             ) {
-                // console.log("Inside loop is %o", block.timestamp);
+                balafterFee =
+                    userDeposits[msg.sender][i].depositBalance -
+                    userDeposits[msg.sender][i].fee;
+                // console.log("Inside loop is %o", balafterFee);
                 // Commented for unit testing (implement block increase)
                 // if first pool has greater amount than required, subract and do nothing
                 if (
-                    userDeposits[msg.sender][i].depositBalance > 0 &&
-                    userDeposits[msg.sender][i].depositBalance >
-                    pendingAmount &&
+                    balafterFee > 0 &&
+                    balafterFee > pendingAmount &&
                     pendingAmount > 0
                 ) {
                     IERC20(_depositToken).transfer(msg.sender, pendingAmount);
@@ -276,15 +273,10 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
                 }
                 // if first pool has lesser amount, subract the amount and save the remaining amount and delete the first pool
                 else {
-                    pendingAmount =
-                        pendingAmount -
-                        userDeposits[msg.sender][i].depositBalance;
-                    _totalDeposit -= userDeposits[msg.sender][i].depositBalance;
-                    _userTotalWithdrawl[msg.sender] += pendingAmount;
-                    IERC20(_depositToken).transfer(
-                        msg.sender,
-                        userDeposits[msg.sender][i].depositBalance
-                    );
+                    pendingAmount = pendingAmount - balafterFee;
+                    _totalDeposit -= balafterFee;
+                    _userTotalWithdrawl[msg.sender] += balafterFee;
+                    IERC20(_depositToken).transfer(msg.sender, balafterFee);
                     delete userDeposits[msg.sender][i];
                 }
                 emit Withdraw(_depositToken, amount);
@@ -341,7 +333,10 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         emit PlatformFee(_platformFee);
     }
 
-    function updateTreasury(address newContractAddress) external onlyOwner {
+    function updateTreasury(address payable newContractAddress)
+        external
+        onlyOwner
+    {
         require(isContract(newContractAddress), "Address is not a contract");
         _treasury = newContractAddress;
     }
@@ -350,7 +345,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         return _platformFee;
     }
 
-    function treasury() public view returns (address) {
+    function treasury() public view returns (address payable) {
         return _treasury;
     }
 
@@ -379,8 +374,9 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         view
         returns (uint256 depositAmount)
     {
-        for (uint256 i = 1; i <= userPoolCount[userAddress]; i++) {
-            depositAmount += userDeposits[userAddress][i].depositBalance;
+        for (uint256 i = 0; i <= userPoolCount[userAddress]; i++) {
+            depositAmount += (userDeposits[userAddress][i].depositBalance -
+                userDeposits[userAddress][i].fee);
         }
     }
 

@@ -31,16 +31,33 @@ async function main() {
     const perpetualStaking = await upgrades.deployProxy(PerpetualStaking, { initializer: "initialize" });
     console.log("Perpetual Staking Proxy : ", perpetualStaking.address);
 
+    const Treasury = await ethers.getContractFactory("Treasury");
+    const treasury = await Treasury.deploy();
+    await treasury.initialize(accounts[0]);
+
     // Example ERC20 Pool
-    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1669040564, 1669040564 + 2592000, 0, [rewardToken], [2]);
+    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1669386922, 1669386922 + 2592000, 0, [rewardToken], [1]);
     // Example ERC721 Pool
-    await perpetualStaking.deployNewPool(ERC721TokenAddress, 1669040564, 1669040564 + 2592000, 0, [rewardToken], [2]);
+    // await perpetualStaking.deployNewPool(ERC721TokenAddress, 1669386922, 1669386922 + 2592000, 0, [rewardToken], [2]);
+    await new Promise(res => setTimeout(res, 10000));
+    const pools = await perpetualStaking.poolsDeployed();
+    console.log("ERC20 pool address : ", pools[0]);
+    // console.log("ERC721 pool address : ", pools[1]);
+
+    const MockERC20 = await ethers.getContractFactory("MockERC20");
+    const mockERC20 = await MockERC20.attach(rewardToken);
+
+    await mockERC20.transfer(pools[0], ethers.utils.parseUnits("10000", 18));
+
+    const PoolERC20 = await ethers.getContractFactory("PoolERC20");
+    const poolERC20 = await PoolERC20.attach(pools[0]);
+
+    await poolERC20.updateTreasury(treasury.address);
+    await poolERC20.updatePlatformFee(100);
 
     await new Promise(res => setTimeout(res, 25000));
 
-    const pools = await perpetualStaking.poolsDeployed();
-    console.log("ERC20 pool address : ", pools[0]);
-    console.log("ERC721 pool address : ", pools[1]);
+
 }
 
 main()

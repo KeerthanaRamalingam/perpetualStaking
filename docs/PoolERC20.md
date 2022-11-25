@@ -32,6 +32,28 @@ function accruedReward(address userAddress) external view returns (uint256 rewar
 |---|---|---|
 | rewardAmount | uint256 | undefined |
 
+### calculatePlatformFee
+
+```solidity
+function calculatePlatformFee(uint256 amount) external view returns (uint256 _toTreasury)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| amount | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _toTreasury | uint256 | undefined |
+
 ### claimAllReward
 
 ```solidity
@@ -148,6 +170,30 @@ function endDate() external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### getReward
+
+```solidity
+function getReward(address tokenAddress, address user, uint256 depositID) external view returns (uint256 lastReward)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| tokenAddress | address | undefined |
+| user | address | undefined |
+| depositID | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| lastReward | uint256 | undefined |
 
 ### getRewardPerUnitOfDeposit
 
@@ -330,7 +376,7 @@ function transferOwnership(address newOwner) external nonpayable
 ### treasury
 
 ```solidity
-function treasury() external view returns (address)
+function treasury() external view returns (address payable)
 ```
 
 
@@ -342,7 +388,7 @@ function treasury() external view returns (address)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | address | undefined |
+| _0 | address payable | undefined |
 
 ### updateEndDate
 
@@ -379,7 +425,7 @@ function updatePlatformFee(uint256 newPlatformFee) external nonpayable
 ### updateTreasury
 
 ```solidity
-function updateTreasury(address newContractAddress) external nonpayable
+function updateTreasury(address payable newContractAddress) external nonpayable
 ```
 
 
@@ -390,7 +436,7 @@ function updateTreasury(address newContractAddress) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| newContractAddress | address | undefined |
+| newContractAddress | address payable | undefined |
 
 ### userClaimed
 

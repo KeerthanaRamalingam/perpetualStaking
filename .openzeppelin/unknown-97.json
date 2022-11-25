@@ -59,6 +59,41 @@
       "address": "0x9b2f38cf9B623B91cCF16BDF0916bd6D74c3aF78",
       "txHash": "0x3f4d033a821a4e522098c5e2c04df173dd4766b7f5209d52152c32e45af35bb6",
       "kind": "transparent"
+    },
+    {
+      "address": "0xfCDDA4aa1b813facED53446C4d4c4463Dda15cb5",
+      "txHash": "0x2a17b41a8b1a8106b2ca0d23afd0b788a5999f8232bea97a269405a3d5293b2b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x393F729cf924171eCDf8FA15969B1898b9557a40",
+      "txHash": "0x2220101d12e3cdb8079b82798428dc1d36540877031a9ffb2900c5ec412aa84a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9767331E3784AFad1EB256af89Df0351550db23E",
+      "txHash": "0x9c61676d4746a85fb4446d80ee79229b23732a2c385c84b4337eabb55f346c71",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8E5867A6F4BB24A159FBbAb60701b5B608Bcd397",
+      "txHash": "0x9aca01fec6d083e54272de3ed3b4c8056fe01ac3bbc3b1e894181d81924f37fa",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x7342C09F3e4e30dc654D2c61E4D30547EC44143A",
+      "txHash": "0xa34c275fa13b2301934c8bf860fb0f242fa7c75cc1a970a29a4be9522c119102",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x81755eC232d942fD6b382e1b6b0dd4375D03Da9d",
+      "txHash": "0x1885f2c91a8fbf59ab687a60bab3086bd3825b1aae9708505fff55d9607e020a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x591f517c643a3cbd79F3b3B37D8A827ABB630Cda",
+      "txHash": "0xd41f61ece226979c617b623127e9848af432805ec4385d59023fc7b9cd583144",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -793,6 +828,110 @@
     "e40f4e43c1466d92ecc409b41827dc6480daf0417009418087b9bff9f46315c5": {
       "address": "0x5c3e501697091b1Eb10d538ca6505C08f81D40fC",
       "txHash": "0x00a3d0b2fa05992983b2de362186a61cee927a96f47469891c93b96b441597f2",
+      "layout": {
+        "solcVersion": "0.8.9",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:74"
+          },
+          {
+            "label": "pools",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "PerpetualStaking",
+            "src": "contracts\\PerpetualStaking.sol:32"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "766faa02c89e09447922ae003078924e9be047466b8af78249b9ca086a744a6e": {
+      "address": "0xFb09b32f1772E641793BCC1acDD65b5778079a3b",
+      "txHash": "0xc1b0a5039a7a6ad3271b8f96645040ed1d1f91783ff756a542f61f37559644c3",
       "layout": {
         "solcVersion": "0.8.9",
         "storage": [

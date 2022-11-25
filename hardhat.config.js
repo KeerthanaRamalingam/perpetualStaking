@@ -23,7 +23,7 @@ const MAINNET_PRIVATE_KEY = process.env.MAINNET_PRIVATE_KEY;
 const MUMBAI_RPC_URL = "https://matic-mumbai.chainstacklabs.com";
 const MUMBAI_PRIVATE_KEY = process.env.MUMBAI_PRIVATE_KEY;
 
-const BSCTESTNET_RPC_URL = "https://data-seed-prebsc-1-s1.binance.org:8545";
+const BSCTESTNET_RPC_URL = "https://data-seed-prebsc-2-s1.binance.org:8545";
 const BSCTESTNET_PRIVATE_KEY = process.env.BSCTESTNET_PRIVATE_KEY;
 
 
