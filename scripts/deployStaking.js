@@ -12,15 +12,15 @@ async function main() {
 
     // const rewardToken = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; // Change based on chain
 
-    // const ERC20 = await ethers.getContractFactory("MockERC20");
-    // const TokenInstancexEth = await ERC20.deploy("1000000000000000000000000000")
-    // console.log("ERC20 Address", TokenInstancexEth.address);
-    const ERC20TokenAddress = "0x379312fB04aD1783D34B7C4FD676628aebfc7F98";//TokenInstancexEth.address;
+    const ERC20 = await ethers.getContractFactory("MockERC20");
+    const TokenInstancexEth = await ERC20.deploy("1000000000000000000000000000")
+    console.log("ERC20 Address", TokenInstancexEth.address);
+    const ERC20TokenAddress = TokenInstancexEth.address;
 
-    // const ERC20Reward = await ethers.getContractFactory("MockERC20");
-    // const TokenInstanceERC20Reward = await ERC20Reward.deploy("1000000000000000000000000000")
-    // console.log("RewardToken ERC20", TokenInstanceERC20Reward.address);
-    const rewardToken = "0x3eee4E624f52915bF19a30189C317353173aEb87";//TokenInstanceERC20Reward.address;
+    const ERC20Reward = await ethers.getContractFactory("MockERC20Reward");
+    const TokenInstanceERC20Reward = await ERC20Reward.deploy("1000000000000000000000000000")
+    console.log("RewardToken ERC20", TokenInstanceERC20Reward.address);
+    const rewardToken = TokenInstanceERC20Reward.address;
 
     // const MockERC721 = await ethers.getContractFactory("MockERC721");
     // const TokenInstanceMockERC721 = await MockERC721.deploy()
@@ -36,7 +36,7 @@ async function main() {
     await treasury.initialize(accounts[0]);
 
     // Example ERC20 Pool
-    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1669386922, 1669386922 + 2592000, 0, [rewardToken], [1]);
+    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1670415685, 1670415685 + 2592000, 0, [rewardToken], [1]);
     // Example ERC721 Pool
     // await perpetualStaking.deployNewPool(ERC721TokenAddress, 1669386922, 1669386922 + 2592000, 0, [rewardToken], [2]);
     await new Promise(res => setTimeout(res, 10000));

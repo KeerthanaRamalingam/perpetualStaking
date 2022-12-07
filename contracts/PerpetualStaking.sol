@@ -14,7 +14,6 @@ import "./PoolERC721.sol";
 // Deposit can be in ERC20,ERC721,ERC1155
 // Declaring variable to private to have same state in inherited contracts
 // @title Perpetual Staking contract act as factory to deploy new ERC20, ERC721, ERC1155 Pools.
-// @author @KeerthanaRamalingam
 contract PerpetualStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using ERC165CheckerUpgradeable for address;
 
