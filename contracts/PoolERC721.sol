@@ -14,7 +14,7 @@ import "./IPerpetualStaking.sol";
 contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     //Pool Maturity date: This is the date on which contract will stop accepting fresh deposits and will also stop accruing the rewards.
     // Can be reinitialised
-    uint256 private _maturityDate;
+    uint256 private _endDate;
 
     //Pool Start date: the date from which contract will start to accept the assets
     uint256 private immutable _startDate;
@@ -34,12 +34,20 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     //Deposit token used to create this contract
     address private _depositToken;
 
+    //total deposit
+    uint256 private _totalDeposit;
+
     //Claimed rewards
     mapping(address => uint256) private _claimed;
+
+    mapping(address => mapping(address => uint256)) private _userClaimed;
+    
+    mapping(address => uint256) private _userTotalWithdrawl;
 
     struct Deposit {
         uint256 depositBalance;
         uint256 depositTime;
+        uint256 claimedReward;
     }
     //Maintain multiple deposits of users
     mapping(address => mapping(uint256 => Deposit)) private userDeposits;
@@ -53,7 +61,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     event Withdraw(address tokenAddress, uint256 amount);
 
     // Event to record reinitilaized maturityDate
-    event MaturityDate(uint256 updatedMaturityDate);
+    event EndDate(uint256 updatedEndDate);
 
     // Event to record reinitilized platform fee
     event PlatformFee(uint256 platformFee);
@@ -67,7 +75,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     constructor(
         address depositToken_,
         uint256 startDate_,
-        uint256 maturityDate_,
+        uint256 endDate_,
         uint256 cliff_,
         address owner_,
         address[] memory rewardTokens_,
@@ -78,7 +86,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         // Cannot be initialized again.
         // State of this variable remain same across functions
         _startDate = startDate_;
-        _maturityDate = maturityDate_;
+        _endDate = endDate_;
         _cliff = cliff_;
         updateRewardForToken(rewardUnits_, rewardTokens_);
         transferOwnership(owner_);
@@ -98,7 +106,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
 
     modifier isExpired() {
         require(block.timestamp > _startDate);
-        require(block.timestamp < maturityDate());
+        require(block.timestamp < endDate());
         _;
     }
 
@@ -108,9 +116,11 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
             "You are not the Owner"
         );
         userPoolCount[msg.sender]++;
+        _totalDeposit ++;
         userDeposits[msg.sender][userPoolCount[msg.sender]] = Deposit(
             nftID,
-            block.timestamp
+            block.timestamp,
+            0
         );
         IERC721(_depositToken).safeTransferFrom(
             msg.sender,
@@ -128,34 +138,43 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         external
     {
         uint256 unclaimed;
+        uint256 reward;
+        uint256 actualAmount = amount;
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
-            if (
-                _cliff < 0 ||
-                block.timestamp >
-                userDeposits[msg.sender][i].depositTime + _cliff
-            ) {
-                unclaimed = getReward(tokenAddress, msg.sender, i);
+            if (_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
+                reward = getReward(tokenAddress, msg.sender, i);
+                if(reward >= amount) {
+                    userDeposits[msg.sender][i].claimedReward += amount;
+                    unclaimed += amount;
+                    break;
+                }
+                else {
+                    userDeposits[msg.sender][i].claimedReward += reward;
+                    unclaimed += reward;
+                    amount = amount - reward;
+                }
             }
         }
-        require(unclaimed >= amount, "Trying to claim more than alloted");
+        require(unclaimed >= actualAmount, "Trying to claim more than alloted");
         require(
-            IERC20(tokenAddress).balanceOf(address(this)) >= amount,
+            IERC20(tokenAddress).balanceOf(address(this)) >= actualAmount,
             "Insufficient reward balance in contract"
         );
-        IERC20(tokenAddress).transfer(msg.sender, amount);
-        _claimed[tokenAddress] = amount;
-        emit Claim(tokenAddress, amount);
+        IERC20(tokenAddress).transfer(msg.sender, actualAmount);
+        _claimed[tokenAddress] += actualAmount;
+        _userClaimed[msg.sender][tokenAddress] += actualAmount;
+        emit Claim(tokenAddress, actualAmount);
     }
 
-    function claimWithToken(address tokenAddress) external {
+    function claimTokenReward(address tokenAddress) external {
         uint256 unclaimed;
+        uint256 reward;
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
-            if (
-                _cliff < 0 ||
-                block.timestamp >
-                userDeposits[msg.sender][i].depositTime + _cliff
-            ) {
-                unclaimed = getReward(tokenAddress, msg.sender, i);
+            if (_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
+                reward = getReward(tokenAddress, msg.sender, i);
+                //+ should be added here
+                unclaimed += reward;
+                userDeposits[msg.sender][i].claimedReward += reward;
             }
         }
         require(
@@ -163,19 +182,21 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
             "Insufficient reward balance in contract"
         );
         IERC20(tokenAddress).transfer(msg.sender, unclaimed);
-        _claimed[tokenAddress] = unclaimed;
+        _claimed[tokenAddress] += unclaimed;
+        _userClaimed[msg.sender][tokenAddress] += unclaimed;
         emit Claim(tokenAddress, unclaimed);
     }
 
-    function claimAllReward() external {
+    function claimAllReward() public {
         uint256 unclaimed;
+        uint256 reward;
         for (uint256 j = 0; j < rewardTokens.length; j++) {
             for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
-                if (
-                    _cliff < 0 ||
-                    block.timestamp >
-                    userDeposits[msg.sender][i].depositTime + _cliff
-                ) unclaimed += getReward(rewardTokens[j], msg.sender, i);
+                if (_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff)  {
+                    reward = getReward(rewardTokens[j], msg.sender, i);
+                    unclaimed += reward;
+                    userDeposits[msg.sender][i].claimedReward += reward;
+                }
             }
             require(
                 IERC20(rewardTokens[j]).balanceOf(address(this)) >= unclaimed,
@@ -183,12 +204,13 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
             );
             IERC20(rewardTokens[j]).transfer(msg.sender, unclaimed);
             _claimed[rewardTokens[j]] += unclaimed;
+            _userClaimed[msg.sender][rewardTokens[j]] += unclaimed;
             emit Claim(rewardTokens[j], unclaimed);
         }
     }
 
     function lastTimeRewardApplicable() internal view returns (uint256) {
-        return Math.min(block.timestamp, maturityDate());
+        return Math.min(block.timestamp, endDate());
     }
 
     // BalancetoClaim reward = {((current block - depositblock)*reward count)- claimedrewards}
@@ -199,11 +221,16 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     ) public view returns (uint256 lastReward) {
         uint256 rewardCount = getRewardPerUnitOfDeposit(tokenAddress) *
             10**IERC20Metadata(tokenAddress).decimals(); // * userDeposits[user][depositID].depositBalance;
-        lastReward =
-            lastReward +
-            (((lastTimeRewardApplicable() -
-                userDeposits[user][depositID].depositTime) * rewardCount) -
-                _claimed[tokenAddress]);
+        if(userDeposits[user][depositID].depositTime != 0)  {
+            lastReward =
+                lastReward +
+                (((lastTimeRewardApplicable() -
+                    userDeposits[user][depositID].depositTime) * rewardCount) -
+                    userDeposits[user][depositID].claimedReward);
+        }
+        else {
+            return 0;
+        }
     }
 
     function accruedReward(address userAddress, address rewardTokenAddress)
@@ -215,9 +242,9 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
             if (
                 _cliff < 0 ||
                 block.timestamp >
-                userDeposits[msg.sender][i].depositTime + _cliff
+                userDeposits[userAddress][i].depositTime + _cliff
             ) {
-                rewardAmount += getReward(rewardTokenAddress, msg.sender, i);
+                rewardAmount += getReward(rewardTokenAddress, userAddress, i);
             }
         }
     }
@@ -226,6 +253,8 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     // Withdraw happens only after cliff
     // Reward should be claimed seperately After cliff
     function withdraw(uint256 nftID) external {
+        //call the reward function
+        claimAllReward();
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
             if (
                 _cliff < 0 ||
@@ -239,6 +268,8 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
                         nftID,
                         ""
                     );
+                    _totalDeposit --;
+                    _userTotalWithdrawl[msg.sender] ++;
                     delete userDeposits[msg.sender][i];
                     emit Withdraw(_depositToken, nftID);
                 }
@@ -260,8 +291,8 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     }
 
     // return maturity date of the pool
-    function maturityDate() public view returns (uint256) {
-        return _maturityDate;
+    function endDate() public view returns (uint256) {
+        return _endDate;
     }
 
     // return cliff of the pool
@@ -271,14 +302,14 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
 
     // Reassigning maturity Date
     // checks Ownership and internal call
-    function updateMaturityDate(uint256 newMaturityDate) external onlyOwner {
-        _updateMaturityDate(newMaturityDate);
+    function updateEndDate(uint256 _endDate_) external onlyOwner {
+        _updateEndDate(_endDate_);
     }
 
     // safe Internal call to update MaturityDate
-    function _updateMaturityDate(uint256 maturitydate_) internal {
-        _maturityDate = maturitydate_;
-        emit MaturityDate(_maturityDate);
+    function _updateEndDate(uint256 endDate_) internal {
+        _endDate = endDate_;
+        emit EndDate(endDate_);
     }
 
     // Reassigning platform Fee
@@ -301,7 +332,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         return account.code.length > 0;
     }
 
-    function updateTreasuryContract(address _treasuryContract)
+    function updateTreasury(address _treasuryContract)
         external
         onlyOwner
     {
@@ -309,7 +340,11 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         _treasury = _treasuryContract;
     }
 
-    function treasuryContract() public view returns (address) {
+    function platformFee() public view returns (uint256) {
+        return _platformFee;
+    }
+
+    function treasury() public view returns (address) {
         return _treasury;
     }
 
@@ -317,7 +352,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         return _depositToken;
     }
 
-    function claimed(address tokenAddress) public view returns (uint256) {
+    function totalClaimed(address tokenAddress) public view returns (uint256) {
         return _claimed[tokenAddress];
     }
 
@@ -346,4 +381,38 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
             balance += 1;
         }
     }
+
+    function totalDeposit() public view returns (uint256) {
+        return _totalDeposit;
+    }
+
+    function rewardToken(uint256 rewardTokenIndex)
+        public
+        view
+        returns(address) 
+    {
+        return rewardTokens[rewardTokenIndex];
+
+    }
+
+    function rewardTokenCount() public view returns (uint256) {
+        return rewardTokens.length;
+    }
+
+    function userClaimed(address userAddress, address rewardTokenAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return _userClaimed[userAddress][rewardTokenAddress];
+    }
+
+    function userTotalWithdrawl(address userAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return _userTotalWithdrawl[userAddress];
+    }
+
 }

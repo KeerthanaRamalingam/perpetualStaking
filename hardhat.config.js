@@ -26,6 +26,7 @@ const MUMBAI_PRIVATE_KEY = process.env.MUMBAI_PRIVATE_KEY;
 const BSCTESTNET_RPC_URL = "https://data-seed-prebsc-2-s1.binance.org:8545";
 const BSCTESTNET_PRIVATE_KEY = process.env.BSCTESTNET_PRIVATE_KEY;
 
+const GOERLI_RPC_URL = "https://goerli.infura.io/v3/";
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -42,6 +43,15 @@ module.exports = {
       },
       {
         version: "0.7.0",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          }
+        },
+      },
+      {
+        version: "0.7.6",
         settings: {
           optimizer: {
             enabled: true,
@@ -75,9 +85,14 @@ module.exports = {
       url: BSCTESTNET_RPC_URL,
       // chainId: 97,
       gasPrice: 35000000000,
-      accounts: [BSCTESTNET_PRIVATE_KEY],
+      accounts: [MUMBAI_PRIVATE_KEY],
       saveDeployments: true,
-
+    },
+    goerli: {
+      url: GOERLI_RPC_URL,
+      gasPrice: 35000000000,
+      accounts: [MUMBAI_PRIVATE_KEY],
+      saveDeployments: true,
     }
   },
   etherscan: {
