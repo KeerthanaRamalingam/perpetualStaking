@@ -66,23 +66,7 @@ describe("Perpetual Staking", function () {
             expect(depositDetails[0]).to.equal(0);
         });
 
-        it("Withdraw in ERC721 pool", async function() {
-            const { perpetualStaking, mockERC721, PoolERC721, owner, mockERC20 } = await loadFixture(
-                deployState
-            );
-            await perpetualStaking.deployNewPool(mockERC721.address, await time.latest() - 60, await time.latest() + 240, 0, [mockERC20.address], [2]);
-            const pools = await perpetualStaking.poolsDeployed();
-            const poolERC721 = await PoolERC721.attach(pools[0]);
-
-            await mockERC721.awardItem(owner.address, "https://game.io");
-            await mockERC721.approve(poolERC721.address, 0);
-            
-            await poolERC721.deposit(0);
-
-            await poolERC721.withdraw(0);
-        })
-
-        it("Claim Reward", async function() {
+        it("Claim Reward ", async function() {
             const { perpetualStaking, mockERC721, PoolERC721, owner, mockERC20 } = await loadFixture(
                 deployState
             );
@@ -100,19 +84,36 @@ describe("Perpetual Staking", function () {
             //await time.increaseTo(await time.latest() + 100);
 
             expect(await poolERC721.userDepositCount(owner.address)).to.equal(2);
-            console.log("count", await poolERC721.userDepositCount(owner.address));
+            console.log("User Deposited count", await poolERC721.userDepositCount(owner.address));
             expect(await poolERC721.userDepositCount(owner.address)).to.equal(2);
-            console.log(await poolERC721.getRewardPerUnitOfDeposit(mockERC20.address));
-            console.log(await poolERC721.getReward(mockERC20.address, owner.address, 1));
+            console.log("Reward Units ",await poolERC721.getRewardPerUnitOfDeposit(mockERC20.address));
+            console.log("Reward Amount ",await poolERC721.getReward(mockERC20.address, owner.address, 1));
             await mockERC20.transfer(poolERC721.address, "20000000000000000000");
-            console.log(await mockERC20.balanceOf(owner.address));
-            console.log(await mockERC20.balanceOf(poolERC721.address));
+            console.log("Reward balance in contract", await mockERC20.balanceOf(poolERC721.address));
             await poolERC721.claimAllReward();
             await poolERC721.withdraw(0);
             await poolERC721.withdraw(1);
 
+        });
 
-        })
+        it("Withdraw in ERC721 pool", async function() {
+            const { perpetualStaking, mockERC721, PoolERC721, owner, mockERC20 } = await loadFixture(
+                deployState
+            );
+            await perpetualStaking.deployNewPool(mockERC721.address, await time.latest() - 60, await time.latest() + 240, 0, [mockERC20.address], [2]);
+            const pools = await perpetualStaking.poolsDeployed();
+            const poolERC721 = await PoolERC721.attach(pools[0]);
+
+            await mockERC721.awardItem(owner.address, "https://game.io");
+            await mockERC721.approve(poolERC721.address, 0);
+            
+            await poolERC721.deposit(0);
+            console.log("Reward Amount ",await poolERC721.getReward(mockERC20.address, owner.address, 1));
+            await mockERC20.transfer(poolERC721.address, "20000000000000000000");
+            console.log("Reward balance in contract", await mockERC20.balanceOf(poolERC721.address));
+            await poolERC721.claimAllReward();
+            await poolERC721.withdraw(0);
+        });
     });
 
 })

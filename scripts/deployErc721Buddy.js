@@ -4,17 +4,13 @@ async function main() {
     const accounts = await ethers.provider.listAccounts();
     console.log("Accounts: ", accounts[0]);
 
-    //Erc721 contract
+    //Attach buddy Contract
+    const buddy = await ethers.getContractFactory("BuddyV5");
+    const buddyInstance = await buddy.attach("0x9882224b64aF861bA8932d38e3317B2cB4662c21");
+    console.log("ERC721 Address", buddyInstance.address);
 
-    const ERC721 = await ethers.getContractFactory("MockERC721");
-    const nftInstance = await ERC721.deploy();
-    //const nftInstance = await ERC721.attach("0x0e1CaDc29Adaf24D2EbE68319951CAA954871d0E");
-    console.log("ERC721 Address", nftInstance.address);
-
-    await nftInstance.awardItem(accounts[0], "QmP96tpWTvT1wqpacYWZ9u19Pi61ME3BKuE8t1bckJz6Mf");
-    await nftInstance.awardItem(accounts[0], "QmP96tpWTvT1wqpacYWZ9u19Pi61ME3BKuE8t1bckJz6Mf");
-    // await nftInstance.awardItem(accounts[0], "QmP96tpWTvT1wqpacYWZ9u19Pi61ME3BKuE8t1bckJz6Mf");
-    console.log("Minted");
+    //drops collectionContract to whitelist
+    const collectionAddress = "0xCA9688DB110B57C3b2a47037773c2f92Df6C086e";
 
     //Reward ERC20
 
@@ -35,14 +31,15 @@ async function main() {
     //Treasury
 
     const Treasury = await ethers.getContractFactory("Treasury");
-    const treasury = Treasury.attach("0x9AdF2b96d57E4CEcD9f3C7efF22Ddc78Ebd4ECaB");
-    //const treasury = await Treasury.deploy();
+    // const treasury = Treasury.attach("0xcEC2AE16554988161CE6f4D6ded616B845a4baB9");
+    const treasury = await Treasury.deploy();
     console.log("Treasury address :", treasury.address);
-    //await treasury.initialize(accounts[0]);
+    await treasury.initialize(accounts[0]);
 
     //Pool ERC721
-    await perpetualStaking.deployNewPool(nftInstance.address, 1675247054, 1675254254, 20, [rewardToken], [2]);
+    await perpetualStaking.deployNewPool(buddyInstance.address, 1675247054, 1675254254, 20, [rewardToken], [2]);
     await new Promise(res => setTimeout(res, 10000));
+
     const pools = await perpetualStaking.poolsDeployed();
     console.log("ERC721 pool address", pools[0]);
 
@@ -60,27 +57,29 @@ async function main() {
     await poolERC721.updateTreasury(treasury.address);
     await poolERC721.updatePlatformFee(100);
 
-    //Approve and Deposit
-    const MockERC721 = await ethers.getContractFactory("MockERC721");
-    const mockERC721 = await MockERC721.attach(nftInstance.address);
-    await mockERC721.approve(pools[0], 0);
+    await poolERC721.dropsCollection(collectionAddress);
+
+    const tokenId = 137;
+    
+    //Approve
+    await buddyInstance.approve(pools[0], tokenId);
     await new Promise(res => setTimeout(res, 10000));
-    await mockERC721.approve(pools[0], 1);
     console.log("approved");
-    // await new Promise(res => setTimeout(res, 9000));
-    await poolERC721.deposit(0);
+    
+    //Deposit
+    await poolERC721.deposit(tokenId);
     await new Promise(res => setTimeout(res, 10000));
-    await poolERC721.deposit(1);
     console.log("deposited");
-    await new Promise(res => setTimeout(res, 10000));
-    console.log("done");
+    
+    //reward
     const rewardAmount = await poolERC721.getReward(rewardToken, accounts[0], 1);
-    const rewardAmount2 = await poolERC721.getReward(rewardToken, accounts[0], 2);
-    console.log("rewardAmount", rewardAmount, rewardAmount2);
+    console.log("rewardAmount", rewardAmount);
     await poolERC721.claimTokenReward(rewardToken);
-    // await poolERC721.withdraw(0);
+    
+    
+    //withdraw
+    // await poolERC721.withdraw(tokenId);
     // console.log("withdrawn");
-    // await poolERC721.withdraw(1);
 
 
 }
@@ -92,8 +91,8 @@ main()
         process.exit(1)
     })
 
-    // ERC721 Address 0x47a2Af7a9aD42e957704dF9945A6B3b1e0c20605
-    // RewardToken ERC20 0x7C66865B32cAe54eDd1fDA3E157edE85e4c09cEd
-    // Perpetual Staking Proxy :  0x6180a50Bb9bFcf3428ceE90D783f34C8f37ABb37
-    // Treasury address : 0x9AdF2b96d57E4CEcD9f3C7efF22Ddc78Ebd4ECaB
-    // ERC721 pool address 0x74475363bEf7Ee8EcdF3034Caba67a691f998361
+// ERC721 Address 0x9882224b64aF861bA8932d38e3317B2cB4662c21
+// RewardToken ERC20 0x7BbBB7f2bb8dD39ca11683A28d8b27B3D23E42c9
+// Perpetual Staking Proxy :  0xe5FfDa21D534167D986cf3A69A7bE2b8Db4024DA
+// Treasury address : 0x9AdF2b96d57E4CEcD9f3C7efF22Ddc78Ebd4ECaB
+// ERC721 pool address 0x04E1cF701c758bB66672e7F8fA2c111383862A68

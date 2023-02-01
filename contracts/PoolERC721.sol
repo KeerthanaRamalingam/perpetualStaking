@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./IPerpetualStaking.sol";
+import "./IBuddy.sol";
 
 // import "hardhat/console.sol";
 
@@ -33,6 +34,8 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
 
     //Deposit token used to create this contract
     address private _depositToken;
+
+    address public collection;
 
     //total deposit
     uint256 private _totalDeposit;
@@ -92,6 +95,12 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         transferOwnership(owner_);
     }
 
+    function dropsCollection(address _collection) external onlyOwner {
+        require(isContract(_collection), "Address is not a contract");
+        collection = _collection;
+
+    }
+
     // update reward for tokens
     function updateRewardForToken(
         uint256[] memory newReward,
@@ -110,11 +119,29 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         _;
     }
 
+    function checkIfDrapped(uint256 nftID) internal view returns(bool) {
+        if(collection == address(0)) {
+            return true;
+        }
+        else {
+            uint256[] memory tokenIds = IBuddy(depositToken()).isTokenIdMapped(nftID, collection);
+            for(uint i = 0; i < tokenIds.length; i++) {
+                if(tokenIds[i] > 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+    }
+
     function deposit(uint256 nftID) external nonReentrant isExpired {
         require(
             IERC721(_depositToken).ownerOf(nftID) == msg.sender,
             "You are not the Owner"
         );
+        bool value = checkIfDrapped(nftID);
+        require(value == true, "Nft is not drapped");
         userPoolCount[msg.sender]++;
         _totalDeposit ++;
         userDeposits[msg.sender][userPoolCount[msg.sender]] = Deposit(
@@ -134,39 +161,8 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     // -------------------- ONE WITHOUT AMOUNT ----------------------//
     // Function to claim Rewards
     // Reward Can be claimed only after cliff
-    function claimWithTokenAndAmount(address tokenAddress, uint256 amount)
-        external
-    {
-        uint256 unclaimed;
-        uint256 reward;
-        uint256 actualAmount = amount;
-        for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
-            if (_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
-                reward = getReward(tokenAddress, msg.sender, i);
-                if(reward >= amount) {
-                    userDeposits[msg.sender][i].claimedReward += amount;
-                    unclaimed += amount;
-                    break;
-                }
-                else {
-                    userDeposits[msg.sender][i].claimedReward += reward;
-                    unclaimed += reward;
-                    amount = amount - reward;
-                }
-            }
-        }
-        require(unclaimed >= actualAmount, "Trying to claim more than alloted");
-        require(
-            IERC20(tokenAddress).balanceOf(address(this)) >= actualAmount,
-            "Insufficient reward balance in contract"
-        );
-        IERC20(tokenAddress).transfer(msg.sender, actualAmount);
-        _claimed[tokenAddress] += actualAmount;
-        _userClaimed[msg.sender][tokenAddress] += actualAmount;
-        emit Claim(tokenAddress, actualAmount);
-    }
 
-    function claimTokenReward(address tokenAddress) external {
+    function claimTokenReward(address tokenAddress) external nonReentrant{
         uint256 unclaimed;
         uint256 reward;
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
@@ -187,7 +183,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         emit Claim(tokenAddress, unclaimed);
     }
 
-    function claimAllReward() public {
+    function claimAllReward() public nonReentrant{
         uint256 unclaimed;
         uint256 reward;
         for (uint256 j = 0; j < rewardTokens.length; j++) {
@@ -252,7 +248,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     // Withdraw deposit amount without reward
     // Withdraw happens only after cliff
     // Reward should be claimed seperately After cliff
-    function withdraw(uint256 nftID) external {
+    function withdraw(uint256 nftID) external nonReentrant{
         //call the reward function
         claimAllReward();
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {

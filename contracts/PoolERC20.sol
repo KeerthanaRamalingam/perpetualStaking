@@ -280,6 +280,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
                     userDeposits[msg.sender][i].depositBalance -= pendingAmount;
                     _totalDeposit -= pendingAmount;
                     _userTotalWithdrawl[msg.sender] += pendingAmount;
+                    break;
                 }
                 // if first pool has lesser amount, subract the amount and save the remaining amount and delete the first pool
                 else {
