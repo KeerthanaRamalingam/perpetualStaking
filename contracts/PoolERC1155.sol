@@ -108,7 +108,7 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
 
     //Function to claim Rewards
     // Reward Can be claimed only after cliff
-    function claimTokenReward(address tokenAddress) external nonReentrant{
+    function claimTokenReward(address tokenAddress) external {
         uint256 unclaimed;
         uint256 reward;
         for(uint256 i = 1; i <= userPoolCount[msg.sender]; i++ ) {
@@ -129,7 +129,7 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
         
     }
 
-    function claimAllReward() public nonReentrant{
+    function claimAllReward() public {
         uint256 unclaimed = 0;
         uint256 rewardAmount = 0;   
         for (uint256 j = 0; j < rewardTokens.length; j++) {

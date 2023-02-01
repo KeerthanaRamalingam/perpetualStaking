@@ -162,7 +162,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     // Function to claim Rewards
     // Reward Can be claimed only after cliff
 
-    function claimTokenReward(address tokenAddress) external nonReentrant{
+    function claimTokenReward(address tokenAddress) external {
         uint256 unclaimed;
         uint256 reward;
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
@@ -183,7 +183,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         emit Claim(tokenAddress, unclaimed);
     }
 
-    function claimAllReward() public nonReentrant{
+    function claimAllReward() public {
         uint256 unclaimed;
         uint256 reward;
         for (uint256 j = 0; j < rewardTokens.length; j++) {

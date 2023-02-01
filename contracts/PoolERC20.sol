@@ -160,7 +160,6 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
 
     function claimTokenReward(address rewardTokenAddress)
         external
-        nonReentrant
     {
         uint256 unclaimed;
         uint256 reward;
@@ -182,7 +181,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     }
 
     ///@notice Claim the total rewards from all reward tokens
-    function claimAllReward() public nonReentrant {
+    function claimAllReward() public {
         uint256 unclaimed;
         uint256 reward;
         for (uint256 j = 0; j < _rewardTokens.length; j++) {
@@ -252,7 +251,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     // Withdraw deposit amount without reward
     // Withdraw happens only after cliff
     // Reward should be claimed seperately After cliff
-    function withdraw(uint256 amount) external {
+    function withdraw(uint256 amount) external nonReentrant{
         claimAllReward();
         uint256 pendingAmount = amount;
         uint256 failedCount;
