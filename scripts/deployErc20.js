@@ -29,7 +29,7 @@ async function main() {
     await treasury.initialize(accounts[0]);
 
     // Example ERC20 Pool
-    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1674560763, 1674562563, 20, [rewardToken], [1]);
+    await perpetualStaking.deployNewPool(ERC20TokenAddress, 1675329684, 1675333284, 20, [rewardToken], [1]);
 
     await new Promise(res => setTimeout(res, 10000));
     const pools = await perpetualStaking.poolsDeployed();
@@ -59,6 +59,8 @@ async function main() {
     const rewardAmount = await poolERC20.getReward(rewardToken, accounts[0], 1);
     console.log("rewardAmount", rewardAmount);
 
+    //await poolERC20.claimAllReward();
+
 
     
 }
@@ -69,3 +71,9 @@ main()
         console.error(error)
         process.exit(1)
     })
+
+
+// ERC20 Address 0x46D029759FEA696884FEbbcCcf2Fd8F991E38617
+// RewardToken ERC20 0xC73F97f1B755BD53CaC82aAe390a618873E00B84
+// Perpetual Staking Proxy :  0xf1d724929AF0C07ad257D906BBc48b844f21C324
+// ERC20 pool address :  0xE132B342B4Bfd081CD0D8f73F2d294997b5C33bF

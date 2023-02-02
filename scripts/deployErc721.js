@@ -41,7 +41,7 @@ async function main() {
     //await treasury.initialize(accounts[0]);
 
     //Pool ERC721
-    await perpetualStaking.deployNewPool(nftInstance.address, 1675247054, 1675254254, 20, [rewardToken], [2]);
+    await perpetualStaking.deployNewPool(nftInstance.address, 1675336104, 1675339704, 20, [rewardToken], [2]);
     await new Promise(res => setTimeout(res, 10000));
     const pools = await perpetualStaking.poolsDeployed();
     console.log("ERC721 pool address", pools[0]);
@@ -92,8 +92,8 @@ main()
         process.exit(1)
     })
 
-    // ERC721 Address 0x47a2Af7a9aD42e957704dF9945A6B3b1e0c20605
-    // RewardToken ERC20 0x7C66865B32cAe54eDd1fDA3E157edE85e4c09cEd
-    // Perpetual Staking Proxy :  0x6180a50Bb9bFcf3428ceE90D783f34C8f37ABb37
-    // Treasury address : 0x9AdF2b96d57E4CEcD9f3C7efF22Ddc78Ebd4ECaB
-    // ERC721 pool address 0x74475363bEf7Ee8EcdF3034Caba67a691f998361
+// ERC721 Address 0xA9906e1aaE787D6E9C581b8d3AFc4C3a74c21612
+// RewardToken ERC20 0x2B82c8602bfEfEd26A362bf6cAD24a5dF7B4F01f
+// Perpetual Staking Proxy :  0xfd8c26d61DF5CAC19eDB37E3F8CA3E168C45d1cc
+// Treasury address : 0x9AdF2b96d57E4CEcD9f3C7efF22Ddc78Ebd4ECaB
+// ERC721 pool address 0x959d992d88D207D632da551a84aa69cEb9dDdb4e

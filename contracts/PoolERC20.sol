@@ -47,6 +47,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         uint256 depositTime;
         uint256 fee;
         uint256 claimedReward;
+        uint256 claimedTime;
     }
 
     //Maintain multiple deposits of users
@@ -138,7 +139,8 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
             amount,
             block.timestamp,
             helper,
-            0
+            0,
+            block.timestamp
         );
         
         IERC20(_depositToken).transferFrom(
@@ -168,6 +170,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
                 reward = getReward(rewardTokenAddress, msg.sender, i);
                 unclaimed += reward;
                 userDeposits[msg.sender][i].claimedReward += reward;
+                userDeposits[msg.sender][i].claimedTime = block.timestamp;
             }
         }
         require(
@@ -190,6 +193,7 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
                     reward = getReward(_rewardTokens[j], msg.sender, i);
                     unclaimed += reward;
                     userDeposits[msg.sender][i].claimedReward += reward;
+                    userDeposits[msg.sender][i].claimedTime = block.timestamp;
                 }
             }
             require(
@@ -208,6 +212,31 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     }
 
     // BalancetoClaim reward = {((current block - depositblock)*reward count)- claimedrewards}
+    // function getReward(
+    //     address tokenAddress,
+    //     address user,
+    //     uint256 depositID
+    // ) public view returns (uint256 lastReward) {
+    //     uint256 rewardCount = getRewardPerUnitOfDeposit(tokenAddress) *
+    //         userDeposits[user][depositID].depositBalance;
+    //         if(userDeposits[user][depositID].depositTime != 0) {
+    //             if((lastTimeRewardApplicable() - userDeposits[user][depositID].depositTime) * rewardCount > userDeposits[user][depositID].claimedReward) {
+    //                 lastReward =
+    //                     lastReward +
+    //                     (((lastTimeRewardApplicable() -
+    //                         userDeposits[user][depositID].depositTime) * rewardCount) -
+    //                         userDeposits[user][depositID].claimedReward);
+    //             }
+    //             else {
+    //                 return 0;
+    //             }
+    //         }
+    //         else {
+    //             return 0;
+    //         }   
+    // }
+
+    // BalancetoClaim reward = {((current block - lastTimeClaimedBlock)*reward count)}
     function getReward(
         address tokenAddress,
         address user,
@@ -215,17 +244,9 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
     ) public view returns (uint256 lastReward) {
         uint256 rewardCount = getRewardPerUnitOfDeposit(tokenAddress) *
             userDeposits[user][depositID].depositBalance;
-            if(userDeposits[user][depositID].depositTime != 0) {
-                if((lastTimeRewardApplicable() - userDeposits[user][depositID].depositTime) * rewardCount > userDeposits[user][depositID].claimedReward) {
-                    lastReward =
-                        lastReward +
-                        (((lastTimeRewardApplicable() -
-                            userDeposits[user][depositID].depositTime) * rewardCount) -
-                            userDeposits[user][depositID].claimedReward);
-                }
-                else {
-                    return 0;
-                }
+            if(userDeposits[user][depositID].claimedTime != 0 && userDeposits[user][depositID].claimedTime <= endDate()) {
+                lastReward = lastReward +
+                ((lastTimeRewardApplicable() - userDeposits[user][depositID].claimedTime) * rewardCount);
             }
             else {
                 return 0;

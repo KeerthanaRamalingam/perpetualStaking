@@ -10,15 +10,15 @@ async function main() {
     //const erc1155Instance = await ERC1155.attach("0xCdc85Ad88A218EDcCF955138b458ABEfC91dc8a2");
     console.log("ERC1155 Address", erc1155Instance.address);
 
-    //Reward ERC20
+    // //Reward ERC20
 
     const ERC20Reward = await ethers.getContractFactory("MockERC20Reward");
     const TokenInstanceERC20Reward = await ERC20Reward.deploy("1000000000000000000000000000");
-    //const TokenInstanceERC20Reward = await ERC20Reward.attach("0x6b0c3b64c22fb2e6e00D68CE8284E5aBE1Fa0DF5");
+    // //const TokenInstanceERC20Reward = await ERC20Reward.attach("0x6b0c3b64c22fb2e6e00D68CE8284E5aBE1Fa0DF5");
     console.log("RewardToken ERC20", TokenInstanceERC20Reward.address);
     const rewardToken = TokenInstanceERC20Reward.address;
 
-    //Perpetual Staking
+    // //Perpetual Staking
 
     const PerpetualStaking = await ethers.getContractFactory("PerpetualErc1155");
     const perpetualStaking = await upgrades.deployProxy(PerpetualStaking, {initializer: "initialize"});
@@ -26,27 +26,27 @@ async function main() {
     
     console.log("Perpetual Staking Proxy : ", perpetualStaking.address);
 
-    //Treasury
+    // //Treasury
 
     const Treasury = await ethers.getContractFactory("Treasury");
     const treasury = Treasury.attach("0x4f62754DF2a75b9D133Bf40C3C74873a702Be3Cf");
-    //const treasury = await Treasury.deploy();
+    // //const treasury = await Treasury.deploy();
     console.log("Treasury address :", treasury.address);
-    // await treasury.initialize(accounts[0]);
+    // // await treasury.initialize(accounts[0]);
 
-    //Pool ERC1155
-    await perpetualStaking.deployNewPool(erc1155Instance.address, 1675250414, 1675257854 , 20, [rewardToken], [2]);
+    // //Pool ERC1155
+    await perpetualStaking.deployNewPool(erc1155Instance.address, 1675339344, 1675340544 , 20, [rewardToken], [2]);
     await new Promise(res => setTimeout(res, 10000));
     const pools = await perpetualStaking.poolsDeployed();
     console.log("ERC1155 pool address", pools[0]);
 
-    // Transfer reward to the erc1155 pool contract
+    // // Transfer reward to the erc1155 pool contract
     const MockERC20 = await ethers.getContractFactory("MockERC20");
     const mockERC20 = await MockERC20.attach(rewardToken);
 
     await mockERC20.transfer(pools[0], ethers.utils.parseUnits("10000", 18));
 
-    // //Admin functions for ERC1155 pool
+    //Admin functions for ERC1155 pool
 
     const PoolERC1155 = await ethers.getContractFactory("PoolERC1155");
     const poolERC1155 = await PoolERC1155.attach(pools[0]);
@@ -69,18 +69,18 @@ async function main() {
     console.log("done");
     const rewardAmount = await poolERC1155.getReward(rewardToken, accounts[0], 1);
     
-    await poolERC1155.deposit(1, 100000000000);
-    await new Promise(res => setTimeout(res, 10000));
-    await poolERC1155.deposit(1, 50000000000);
-    await new Promise(res => setTimeout(res, 10000));
-    await poolERC1155.deposit(1, 50000000000);
-    await new Promise(res => setTimeout(res, 10000));
+    // await poolERC1155.deposit(1, 100000000000);
+    // await new Promise(res => setTimeout(res, 10000));
+    // await poolERC1155.deposit(1, 50000000000);
+    // await new Promise(res => setTimeout(res, 10000));
+    // await poolERC1155.deposit(1, 50000000000);
+    // await new Promise(res => setTimeout(res, 10000));
 
     console.log("rewardAmount", rewardAmount);
-    await poolERC1155.claimTokenReward(rewardToken);
-    await new Promise(res => setTimeout(res, 10000));
-    await poolERC1155.withdraw(2,1);
-    console.log("withdrawn");
+    // await poolERC1155.claimTokenReward(rewardToken);
+    // await new Promise(res => setTimeout(res, 10000));
+    // await poolERC1155.withdraw(2,1);
+    // console.log("withdrawn");
 
 
 }
@@ -92,8 +92,8 @@ main()
         process.exit(1)
     })
 
-// ERC1155 Address 0x9D0e5B5902fd2737bC82D50A19E6c3B408a15704
-// RewardToken ERC20 0x48A6B4DE3Ec4F3a4cF87F4E6844d5Fe048571e35
-// Perpetual Staking Proxy :  0x4595eC46FFAfCeea227713ff079B3eEF314F0f12
-// Treasury address : 0x4f62754DF2a75b9D133Bf40C3C74873a702Be3Cf
-// ERC1155 pool address 0xF151b69b9C838671dc0D62EE5CEA6bC9279d5C8b
+    // ERC1155 Address 0xE6fE478809d9eba2954cFf134bb35e8dfCAd5982
+    // RewardToken ERC20 0x29C0fEF3D32Da9D28c8f992da7eBD91C07Ba91e7
+    // Perpetual Staking Proxy :  0xC1e94E34d70dE6F64d977dA9D7189b869b6daBd6
+    // Treasury address : 0x4f62754DF2a75b9D133Bf40C3C74873a702Be3Cf
+    // ERC1155 pool address 0xe7667D3068330d08E107F3A6777FFbc19d724F0B

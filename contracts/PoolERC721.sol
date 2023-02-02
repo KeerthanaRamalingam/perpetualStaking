@@ -51,6 +51,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         uint256 depositBalance;
         uint256 depositTime;
         uint256 claimedReward;
+        uint256 claimedTime;
     }
     //Maintain multiple deposits of users
     mapping(address => mapping(uint256 => Deposit)) private userDeposits;
@@ -147,7 +148,8 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         userDeposits[msg.sender][userPoolCount[msg.sender]] = Deposit(
             nftID,
             block.timestamp,
-            0
+            0,
+            block.timestamp
         );
         IERC721(_depositToken).safeTransferFrom(
             msg.sender,
@@ -168,9 +170,9 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
             if (_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
                 reward = getReward(tokenAddress, msg.sender, i);
-                //+ should be added here
                 unclaimed += reward;
                 userDeposits[msg.sender][i].claimedReward += reward;
+                userDeposits[msg.sender][i].claimedTime = block.timestamp;
             }
         }
         require(
@@ -192,6 +194,7 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
                     reward = getReward(rewardTokens[j], msg.sender, i);
                     unclaimed += reward;
                     userDeposits[msg.sender][i].claimedReward += reward;
+                    userDeposits[msg.sender][i].claimedTime = block.timestamp;
                 }
             }
             require(
@@ -217,12 +220,9 @@ contract PoolERC721 is Ownable, ReentrancyGuard, ERC721Holder {
     ) public view returns (uint256 lastReward) {
         uint256 rewardCount = getRewardPerUnitOfDeposit(tokenAddress) *
             10**IERC20Metadata(tokenAddress).decimals(); // * userDeposits[user][depositID].depositBalance;
-        if(userDeposits[user][depositID].depositTime != 0)  {
-            lastReward =
-                lastReward +
-                (((lastTimeRewardApplicable() -
-                    userDeposits[user][depositID].depositTime) * rewardCount) -
-                    userDeposits[user][depositID].claimedReward);
+        if(userDeposits[user][depositID].claimedTime != 0 && userDeposits[user][depositID].claimedTime <= endDate())  {
+            lastReward = lastReward +
+            ((lastTimeRewardApplicable() - userDeposits[user][depositID].claimedTime) * rewardCount);
         }
         else {
             return 0;

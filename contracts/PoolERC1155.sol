@@ -52,6 +52,7 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
         uint batchID;
         uint depositTime;
         uint256 claimedReward;
+        uint256 claimedTime;
     }
     //Maintain multiple deposits of users
     mapping(address => mapping(uint => Deposit)) private userDeposits;
@@ -101,7 +102,8 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
             amount,
             batchID,
             block.timestamp,
-            0
+            0,
+            block.timestamp
         );
         IERC1155(_depositToken).safeTransferFrom(msg.sender, address(this), batchID, amount, "");
     }
@@ -116,6 +118,7 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
                 reward = getReward(tokenAddress, msg.sender, i);
                 unclaimed += reward;
                 userDeposits[msg.sender][i].claimedReward += reward;
+                userDeposits[msg.sender][i].claimedTime = block.timestamp;
             }
         }
         require(
@@ -138,6 +141,7 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
                     rewardAmount = getReward(rewardTokens[j], msg.sender, i);
                     unclaimed += rewardAmount;   
                     userDeposits[msg.sender][i].claimedReward += rewardAmount;
+                    userDeposits[msg.sender][i].claimedTime = block.timestamp;
                 }
             }
             require(
@@ -158,24 +162,11 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
 
     // BalancetoClaim reward = {((current block - depositblock)*reward count)- claimedrewards}
     function getReward(address tokenAddress, address user, uint depositID) public view returns (uint lastReward) {
-        uint balance = userDeposits[user][depositID].depositBalance;
-        uint rewardCount;
-        if(balance == 1) {
-            rewardCount = getRewardPerUnitOfDeposit(tokenAddress) * 10 ** IERC20Metadata(tokenAddress).decimals();// * userDeposits[user][depositID].depositBalance;
-        }
-        else {
-            rewardCount = getRewardPerUnitOfDeposit(tokenAddress) * 
-            userDeposits[user][depositID].depositBalance;
-        }
-        if(userDeposits[user][depositID].depositTime != 0) {
-            if((lastTimeRewardApplicable() - userDeposits[user][depositID].depositTime) * rewardCount > userDeposits[user][depositID].claimedReward) {
-                lastReward = 
-                        (((lastTimeRewardApplicable() - userDeposits[user][depositID].depositTime) * rewardCount) - 
-                        userDeposits[user][depositID].claimedReward);
-            }
-            else {
-                return 0;
-            }
+        uint rewardCount = getRewardPerUnitOfDeposit(tokenAddress) * 
+        userDeposits[user][depositID].depositBalance;
+        if(userDeposits[user][depositID].claimedTime != 0 && userDeposits[user][depositID].claimedTime <= endDate()) {
+            lastReward = lastReward +
+            ((lastTimeRewardApplicable() - userDeposits[user][depositID].claimedTime) * rewardCount); 
         }
         else {
             return 0;
