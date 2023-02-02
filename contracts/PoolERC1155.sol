@@ -116,9 +116,11 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
         for(uint256 i = 1; i <= userPoolCount[msg.sender]; i++ ) {
             if(_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
                 reward = getReward(tokenAddress, msg.sender, i);
-                unclaimed += reward;
-                userDeposits[msg.sender][i].claimedReward += reward;
-                userDeposits[msg.sender][i].claimedTime = block.timestamp;
+                if(reward != 0) {
+                    unclaimed += reward;
+                    userDeposits[msg.sender][i].claimedReward += reward;
+                    userDeposits[msg.sender][i].claimedTime = block.timestamp;
+                }
             }
         }
         require(
@@ -139,9 +141,11 @@ contract PoolERC1155 is Ownable, ReentrancyGuard, ERC1155Holder {
             for(uint256 i = 1; i <= userPoolCount[msg.sender]; i++ ) {
                 if(_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
                     rewardAmount = getReward(rewardTokens[j], msg.sender, i);
-                    unclaimed += rewardAmount;   
-                    userDeposits[msg.sender][i].claimedReward += rewardAmount;
-                    userDeposits[msg.sender][i].claimedTime = block.timestamp;
+                    if(rewardAmount != 0) {
+                        unclaimed += rewardAmount;   
+                        userDeposits[msg.sender][i].claimedReward += rewardAmount;
+                        userDeposits[msg.sender][i].claimedTime = block.timestamp;
+                    }
                 }
             }
             require(

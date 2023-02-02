@@ -168,9 +168,11 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
         for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
             if (_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
                 reward = getReward(rewardTokenAddress, msg.sender, i);
-                unclaimed += reward;
-                userDeposits[msg.sender][i].claimedReward += reward;
-                userDeposits[msg.sender][i].claimedTime = block.timestamp;
+                if(reward != 0) {
+                    unclaimed += reward;
+                    userDeposits[msg.sender][i].claimedReward += reward;
+                    userDeposits[msg.sender][i].claimedTime = block.timestamp;
+                }
             }
         }
         require(
@@ -191,9 +193,11 @@ contract PoolERC20 is Ownable, ReentrancyGuard {
             for (uint256 i = 1; i <= userPoolCount[msg.sender]; i++) {
                 if (_cliff < 0 || block.timestamp > userDeposits[msg.sender][i].depositTime + _cliff) {
                     reward = getReward(_rewardTokens[j], msg.sender, i);
-                    unclaimed += reward;
-                    userDeposits[msg.sender][i].claimedReward += reward;
-                    userDeposits[msg.sender][i].claimedTime = block.timestamp;
+                    if(reward != 0) {
+                        unclaimed += reward;
+                        userDeposits[msg.sender][i].claimedReward += reward;
+                        userDeposits[msg.sender][i].claimedTime = block.timestamp;
+                    }
                 }
             }
             require(
